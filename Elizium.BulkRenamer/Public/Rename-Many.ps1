@@ -21,7 +21,7 @@ function Rename-Many {
   runs as though -WhatIf has been specified. There are indications in the output to show
   that the command is in a locked state (there is an indicator in the batch header and
   a 'Novice' indicator in the summary). To activate the command, the user needs to
-  set the environment variable 'LOOPZ_REMY_LOCKED' to $false. The user should not
+  set the environment variable 'BULKRN_REMY_LOCKED' to $false. The user should not
   unlock the command until they are comfortable with how to use this command properly
   and knows how to write regular expressions correctly. (See regex101.com)
 
@@ -35,7 +35,7 @@ function Rename-Many {
     The name of the undo script is based upon the current date and time and is displayed
   in the summary. (The user can, if they wish disable the undo feature if they don't want
   to have to manage the accumulation of undo scripts, by setting the environment variable
-  LOOPZ_REMY_UNDO_DISABLED to $true)
+  BULKRN_REMY_UNDO_DISABLED to $true)
 
   Another important point of note is that there are currently 3 modes of operation:
   'move', 'update' or 'cut':
@@ -108,11 +108,11 @@ function Rename-Many {
   * Title (default: 'Rename') the name used in the batch header.
   * ItemMessage (default: 'Rename Item') the operation name used for each renamed item.
   * SummaryMessage (default: 'Rename Summary') the name used in the batch summary.
-  * Locked (default: 'LOOPZ_REMY_LOCKED) the name of the environment variable which controls
+  * Locked (default: 'BULKRN_REMY_LOCKED) the name of the environment variable which controls
     the locking of the command.
-  * DisabledEnVar (default: 'LOOPZ_REMY_UNDO_DISABLED') the name of the environment variable
+  * DisabledEnVar (default: 'BULKRN_REMY_UNDO_DISABLED') the name of the environment variable
     which controls if the undo script feature is disabled.
-  * UndoDisabledEnVar (default: 'LOOPZ_REMY_UNDO_DISABLED') the name of the environment
+  * UndoDisabledEnVar (default: 'BULKRN_REMY_UNDO_DISABLED') the name of the environment
     variable which determines if the Undo feature is disabled. This allows any other function
     built on top of Rename-Many to control the undo feature for itself independently of
     Rename-Many.
@@ -547,7 +547,7 @@ number of item processed
         [Parameter(Mandatory)]
         $endAdapter
       )
-      [string]$action = $_exchange['LOOPZ.REMY.ACTION'];
+      [string]$action = $_exchange['BULKRN.REMY.ACTION'];
       [boolean]$diagnose = ($_exchange.ContainsKey('LOOPZ.DIAGNOSE') -and
         $_exchange['LOOPZ.DIAGNOSE']);
       [string]$adjustedName = $endAdapter.GetAdjustedName();
@@ -562,8 +562,8 @@ number of item processed
         #
         [hashtable]$_params = @{
           'Value'     = $adjustedName;
-          'Appendage' = $exchange['LOOPZ.REMY.APPENDAGE'];
-          'Type'      = $exchange['LOOPZ.REMY.APPENDAGE.TYPE'];
+          'Appendage' = $exchange['BULKRN.REMY.APPENDAGE'];
+          'Type'      = $exchange['BULKRN.REMY.APPENDAGE.TYPE'];
         }
 
         $_params;
@@ -577,49 +577,49 @@ number of item processed
 
         # Pattern is present for all actions except Cut
         #
-        if ($exchange.ContainsKey('LOOPZ.REMY.PATTERN-REGEX')) {
-          $_params['Pattern'] = $exchange['LOOPZ.REMY.PATTERN-REGEX'];
+        if ($exchange.ContainsKey('BULKRN.REMY.PATTERN-REGEX')) {
+          $_params['Pattern'] = $exchange['BULKRN.REMY.PATTERN-REGEX'];
 
-          $_params['PatternOccurrence'] = $exchange.ContainsKey('LOOPZ.REMY.PATTERN-OCC') `
-            ? $exchange['LOOPZ.REMY.PATTERN-OCC'] : 'f';
+          $_params['PatternOccurrence'] = $exchange.ContainsKey('BULKRN.REMY.PATTERN-OCC') `
+            ? $exchange['BULKRN.REMY.PATTERN-OCC'] : 'f';
         }
-        elseif ($exchange.ContainsKey('LOOPZ.REMY.CUT-REGEX')) {
-          $_params['Cut'] = $exchange['LOOPZ.REMY.CUT-REGEX'];
+        elseif ($exchange.ContainsKey('BULKRN.REMY.CUT-REGEX')) {
+          $_params['Cut'] = $exchange['BULKRN.REMY.CUT-REGEX'];
 
-          $_params['CutOccurrence'] = $exchange.ContainsKey('LOOPZ.REMY.CUT-OCC') `
-            ? $exchange['LOOPZ.REMY.CUT-OCC'] : 'f';
+          $_params['CutOccurrence'] = $exchange.ContainsKey('BULKRN.REMY.CUT-OCC') `
+            ? $exchange['BULKRN.REMY.CUT-OCC'] : 'f';
         }
 
         if ($action -eq 'Move-Match') {
-          if ($exchange.ContainsKey('LOOPZ.REMY.ANCHOR.REGEX')) {
-            $_params['Anchor'] = $exchange['LOOPZ.REMY.ANCHOR.REGEX'];
+          if ($exchange.ContainsKey('BULKRN.REMY.ANCHOR.REGEX')) {
+            $_params['Anchor'] = $exchange['BULKRN.REMY.ANCHOR.REGEX'];
           }
-          if ($exchange.ContainsKey('LOOPZ.REMY.ANCHOR-OCC')) {
-            $_params['AnchorOccurrence'] = $exchange['LOOPZ.REMY.ANCHOR-OCC'];
-          }
-
-          if ($exchange.ContainsKey('LOOPZ.REMY.DROP')) {
-            $_params['Drop'] = $exchange['LOOPZ.REMY.DROP'];
-            $_params['Marker'] = $exchange['LOOPZ.REMY.MARKER'];
+          if ($exchange.ContainsKey('BULKRN.REMY.ANCHOR-OCC')) {
+            $_params['AnchorOccurrence'] = $exchange['BULKRN.REMY.ANCHOR-OCC'];
           }
 
-          switch ($exchange['LOOPZ.REMY.ANCHOR-TYPE']) {
+          if ($exchange.ContainsKey('BULKRN.REMY.DROP')) {
+            $_params['Drop'] = $exchange['BULKRN.REMY.DROP'];
+            $_params['Marker'] = $exchange['BULKRN.REMY.MARKER'];
+          }
+
+          switch ($exchange['BULKRN.REMY.ANCHOR-TYPE']) {
             'MATCHED-ITEM' {
-              if ($exchange.ContainsKey('LOOPZ.REMY.RELATION')) {
-                $_params['Relation'] = $exchange['LOOPZ.REMY.RELATION'];
+              if ($exchange.ContainsKey('BULKRN.REMY.RELATION')) {
+                $_params['Relation'] = $exchange['BULKRN.REMY.RELATION'];
               }
               break;
             }
             'HYBRID-START' {
-              if ($exchange.ContainsKey('LOOPZ.REMY.RELATION')) {
-                $_params['Relation'] = $exchange['LOOPZ.REMY.RELATION'];
+              if ($exchange.ContainsKey('BULKRN.REMY.RELATION')) {
+                $_params['Relation'] = $exchange['BULKRN.REMY.RELATION'];
               }
               $_params['Start'] = $true;
               break;
             }
             'HYBRID-END' {
-              if ($exchange.ContainsKey('LOOPZ.REMY.RELATION')) {
-                $_params['Relation'] = $exchange['LOOPZ.REMY.RELATION'];
+              if ($exchange.ContainsKey('BULKRN.REMY.RELATION')) {
+                $_params['Relation'] = $exchange['BULKRN.REMY.RELATION'];
               }
               $_params['End'] = $true;
               break;
@@ -637,7 +637,7 @@ number of item processed
               break;
             }
             default {
-              throw "doRenameFsItems: encountered Invalid 'LOOPZ.REMY.ANCHOR-TYPE': '$AnchorType'";
+              throw "doRenameFsItems: encountered Invalid 'BULKRN.REMY.ANCHOR-TYPE': '$AnchorType'";
             }
           }
         } # $action
@@ -651,20 +651,20 @@ number of item processed
         $actionParameters['Diagnose'] = $exchange['LOOPZ.DIAGNOSE'];
       }
 
-      if ($exchange.ContainsKey('LOOPZ.REMY.COPY.REGEX')) {
-        $actionParameters['Copy'] = $exchange['LOOPZ.REMY.COPY.REGEX'];
+      if ($exchange.ContainsKey('BULKRN.REMY.COPY.REGEX')) {
+        $actionParameters['Copy'] = $exchange['BULKRN.REMY.COPY.REGEX'];
 
-        if ($exchange.ContainsKey('LOOPZ.REMY.COPY-OCC')) {
-          $actionParameters['CopyOccurrence'] = $exchange['LOOPZ.REMY.COPY-OCC'];
+        if ($exchange.ContainsKey('BULKRN.REMY.COPY-OCC')) {
+          $actionParameters['CopyOccurrence'] = $exchange['BULKRN.REMY.COPY-OCC'];
         }
       }
 
-      if ($exchange.ContainsKey('LOOPZ.REMY.WITH')) {
-        $actionParameters['With'] = $exchange['LOOPZ.REMY.WITH'];
+      if ($exchange.ContainsKey('BULKRN.REMY.WITH')) {
+        $actionParameters['With'] = $exchange['BULKRN.REMY.WITH'];
       }
 
-      if ($exchange.ContainsKey('LOOPZ.REMY.PASTE')) {
-        $actionParameters['Paste'] = $exchange['LOOPZ.REMY.PASTE'];
+      if ($exchange.ContainsKey('BULKRN.REMY.PASTE')) {
+        $actionParameters['Paste'] = $exchange['BULKRN.REMY.PASTE'];
       }
 
       return $actionParameters;
@@ -718,7 +718,7 @@ number of item processed
 
       $endAdapter = New-EndAdapter($_underscore);
 
-      [string]$action = $_exchange['LOOPZ.REMY.ACTION'];
+      [string]$action = $_exchange['BULKRN.REMY.ACTION'];
       [boolean]$performDiagnosis = ($_exchange.ContainsKey('LOOPZ.DIAGNOSE') -and
         $_exchange['LOOPZ.DIAGNOSE']);
 
@@ -744,13 +744,13 @@ number of item processed
 
         [PSCustomObject]$actionResult = [PSCustomObject]@{
           FailedReason = $errorReason;
-          Success = $false;
+          Success      = $false;
         }
       }
 
       try {
-        if ([string]::IsNullOrEmpty($errorReason) -and $_exchange.ContainsKey('LOOPZ.REMY.TRANSFORM')) {
-          [scriptblock]$transform = $_exchange['LOOPZ.REMY.TRANSFORM'];
+        if ([string]::IsNullOrEmpty($errorReason) -and $_exchange.ContainsKey('BULKRN.REMY.TRANSFORM')) {
+          [scriptblock]$transform = $_exchange['BULKRN.REMY.TRANSFORM'];
 
           if ($transform) {
             [string]$transformed = $transform.InvokeReturnAsIs(
@@ -801,8 +801,8 @@ number of item processed
         try {
           $product = rename-FsItem -From $_underscore -To $newItemName -WhatIf:$whatIf -UndoOperant $operant;
 
-          [UndoRename]$operant = $_exchange.ContainsKey('LOOPZ.REMY.UNDO') `
-            ? $_exchange['LOOPZ.REMY.UNDO'] : $null;
+          [UndoRename]$operant = $_exchange.ContainsKey('BULKRN.REMY.UNDO') `
+            ? $_exchange['BULKRN.REMY.UNDO'] : $null;
           $trigger = $true;
         }
         catch {
@@ -818,8 +818,8 @@ number of item processed
       #
       [string]$fileSystemItemType = $itemIsDirectory ? 'Directory' : 'File';
 
-      [PSCustomObject]$context = $_exchange['LOOPZ.REMY.CONTEXT'];
-      [int]$maxItemMessageSize = $_exchange['LOOPZ.REMY.MAX-ITEM-MESSAGE-SIZE'];
+      [PSCustomObject]$context = $_exchange['BULKRN.REMY.CONTEXT'];
+      [int]$maxItemMessageSize = $_exchange['BULKRN.REMY.MAX-ITEM-MESSAGE-SIZE'];
       [string]$normalisedItemMessage = $Context.ItemMessage.replace(
         $Loopz.FsItemTypePlaceholder, $fileSystemItemType);
 
@@ -838,7 +838,7 @@ number of item processed
         -Signals $signals -CustomLabel $messageLabel -Format '   [{1}] {0}';
 
       [int]$magic = 5;
-      [int]$indent = $_exchange['LOOPZ.REMY.FIXED-INDENT'] + $message.Length - $magic;
+      [int]$indent = $_exchange['BULKRN.REMY.FIXED-INDENT'] + $message.Length - $magic;
       $_exchange['LOOPZ.WH-FOREACH-DECORATOR.INDENT'] = $indent;
       $_exchange['LOOPZ.WH-FOREACH-DECORATOR.MESSAGE'] = $message;
       $_exchange['LOOPZ.WH-FOREACH-DECORATOR.PRODUCT-LABEL'] = $(Get-PaddedLabel -Label $(
@@ -846,7 +846,7 @@ number of item processed
 
       if (-not([string]::IsNullOrEmpty($errorReason))) {
         $null = $lines += (New-Line(
-            New-Pair(@($_exchange['LOOPZ.REMY.FROM-LABEL'], $_underscore.Name))
+            New-Pair(@($_exchange['BULKRN.REMY.FROM-LABEL'], $_underscore.Name))
           ));
 
         [couplet]$errorSignal = Get-FormattedSignal -Name 'BAD-A' `
@@ -859,7 +859,7 @@ number of item processed
       }
       elseif ($trigger) {
         $null = $lines += (New-Line(
-            New-Pair(@($_exchange['LOOPZ.REMY.FROM-LABEL'], $_underscore.Name))
+            New-Pair(@($_exchange['BULKRN.REMY.FROM-LABEL'], $_underscore.Name))
           ));
       }
       else {
@@ -981,7 +981,7 @@ number of item processed
     [hashtable]$signals = $(Get-Signals);
     [hashtable]$theme = $_scribbler.Krayon.Theme;
     [boolean]$locked = Get-IsLocked -Variable $(
-      [string]::IsNullOrEmpty($Context.Locked) ? 'LOOPZ_REMY_LOCKED' : $Context.Locked
+      [string]::IsNullOrEmpty($Context.Locked) ? 'BULKRN_REMY_LOCKED' : $Context.Locked
     );
 
     [string]$title = $Context.psobject.properties.match('Title') -and `
@@ -1022,12 +1022,12 @@ number of item processed
       'LOOPZ.SUMMARY-BLOCK.LINE'              = $LoopzUI.EqualsLine;
       'LOOPZ.SUMMARY-BLOCK.MESSAGE'           = $summaryMessage;
 
-      'LOOPZ.REMY.CONTEXT'                    = $Context;
-      'LOOPZ.REMY.MAX-ITEM-MESSAGE-SIZE'      = $maxItemMessageSize;
-      'LOOPZ.REMY.FIXED-INDENT'               = get-fixedIndent -Theme $theme;
-      'LOOPZ.REMY.FROM-LABEL'                 = Get-PaddedLabel -Label 'From' -Width 9;
+      'BULKRN.REMY.CONTEXT'                   = $Context;
+      'BULKRN.REMY.MAX-ITEM-MESSAGE-SIZE'     = $maxItemMessageSize;
+      'BULKRN.REMY.FIXED-INDENT'              = get-fixedIndent -Theme $theme;
+      'BULKRN.REMY.FROM-LABEL'                = Get-PaddedLabel -Label 'From' -Width 9;
 
-      'LOOPZ.REMY.USER-PARAMS'                = $PSBoundParameters;
+      'BULKRN.REMY.USER-PARAMS'               = $PSBoundParameters;
     }
 
     [string]$adjustedWhole = if ($PSBoundParameters.ContainsKey('Whole')) {
@@ -1061,8 +1061,8 @@ number of item processed
       Value          = $Pattern;
       Signal         = 'PATTERN';
       WholeSpecifier = 'p';
-      RegExKey       = 'LOOPZ.REMY.PATTERN-REGEX';
-      OccurrenceKey  = 'LOOPZ.REMY.PATTERN-OCC';
+      RegExKey       = 'BULKRN.REMY.PATTERN-REGEX';
+      OccurrenceKey  = 'BULKRN.REMY.PATTERN-OCC';
     }
     $bootStrap.Register($patternSpec);
 
@@ -1083,11 +1083,11 @@ number of item processed
       Value          = $Anchor;
       Signal         = 'REMY.ANCHOR';
       WholeSpecifier = 'a';
-      RegExKey       = 'LOOPZ.REMY.ANCHOR.REGEX';
-      OccurrenceKey  = 'LOOPZ.REMY.ANCHOR-OCC';
+      RegExKey       = 'BULKRN.REMY.ANCHOR.REGEX';
+      OccurrenceKey  = 'BULKRN.REMY.ANCHOR-OCC';
       Keys           = @{
-        'LOOPZ.REMY.ACTION'      = 'Move-Match';
-        'LOOPZ.REMY.ANCHOR-TYPE' = 'MATCHED-ITEM';
+        'BULKRN.REMY.ACTION'      = 'Move-Match';
+        'BULKRN.REMY.ANCHOR-TYPE' = 'MATCHED-ITEM';
       }
     }
     $bootStrap.Register($anchorSpec);
@@ -1102,11 +1102,11 @@ number of item processed
       Value          = $AnchorStart;
       Signal         = 'REMY.ANCHOR';
       WholeSpecifier = 'a';
-      RegExKey       = 'LOOPZ.REMY.ANCHOR.REGEX';
-      OccurrenceKey  = 'LOOPZ.REMY.ANCHOR-OCC';
+      RegExKey       = 'BULKRN.REMY.ANCHOR.REGEX';
+      OccurrenceKey  = 'BULKRN.REMY.ANCHOR-OCC';
       Keys           = @{
-        'LOOPZ.REMY.ACTION'      = 'Move-Match';
-        'LOOPZ.REMY.ANCHOR-TYPE' = 'HYBRID-START';
+        'BULKRN.REMY.ACTION'      = 'Move-Match';
+        'BULKRN.REMY.ANCHOR-TYPE' = 'HYBRID-START';
       }
     }
     $bootStrap.Register($anchorStartSpec);
@@ -1121,11 +1121,11 @@ number of item processed
       Value          = $AnchorEnd;
       Signal         = 'REMY.ANCHOR';
       WholeSpecifier = 'a';
-      RegExKey       = 'LOOPZ.REMY.ANCHOR.REGEX';
-      OccurrenceKey  = 'LOOPZ.REMY.ANCHOR-OCC';
+      RegExKey       = 'BULKRN.REMY.ANCHOR.REGEX';
+      OccurrenceKey  = 'BULKRN.REMY.ANCHOR-OCC';
       Keys           = @{
-        'LOOPZ.REMY.ACTION'      = 'Move-Match';
-        'LOOPZ.REMY.ANCHOR-TYPE' = 'HYBRID-END';
+        'BULKRN.REMY.ACTION'      = 'Move-Match';
+        'BULKRN.REMY.ANCHOR-TYPE' = 'HYBRID-END';
       }
     }
     $bootStrap.Register($anchorEndSpec);
@@ -1140,8 +1140,8 @@ number of item processed
       Value          = $Copy;
       Signal         = 'COPY-A';
       WholeSpecifier = 'c';
-      RegExKey       = 'LOOPZ.REMY.COPY.REGEX';
-      OccurrenceKey  = 'LOOPZ.REMY.COPY-OCC';
+      RegExKey       = 'BULKRN.REMY.COPY.REGEX';
+      OccurrenceKey  = 'BULKRN.REMY.COPY-OCC';
     }
     $bootStrap.Register($copySpec);
 
@@ -1156,7 +1156,7 @@ number of item processed
       Signal      = 'WITH';
       SignalValue = $With;
       Keys        = @{
-        'LOOPZ.REMY.WITH' = $With;
+        'BULKRN.REMY.WITH' = $With;
       }
     }
     $bootStrap.Register($withSpec);
@@ -1170,8 +1170,8 @@ number of item processed
       Name          = 'Include';
       Value         = $Include;
       Signal        = 'INCLUDE';
-      RegExKey      = 'LOOPZ.REMY.INCLUDE.REGEX';
-      OccurrenceKey = 'LOOPZ.REMY.INCLUDE-OCC';
+      RegExKey      = 'BULKRN.REMY.INCLUDE.REGEX';
+      OccurrenceKey = 'BULKRN.REMY.INCLUDE-OCC';
     }
     $bootStrap.Register($includeSpec);
 
@@ -1184,8 +1184,8 @@ number of item processed
       Name          = 'Except';
       Value         = $Except;
       Signal        = 'EXCLUDE';
-      RegExKey      = 'LOOPZ.REMY.EXCLUDE.REGEX';
-      OccurrenceKey = 'LOOPZ.REMY.EXCLUDE-OCC';
+      RegExKey      = 'BULKRN.REMY.EXCLUDE.REGEX';
+      OccurrenceKey = 'BULKRN.REMY.EXCLUDE-OCC';
     }
     $bootStrap.Register($exceptSpec);
 
@@ -1213,7 +1213,7 @@ number of item processed
       Signal      = 'PASTE-A';
       SignalValue = $Paste;
       Keys        = @{
-        'LOOPZ.REMY.PASTE' = $Paste;
+        'BULKRN.REMY.PASTE' = $Paste;
       }
     }
     $bootStrap.Register($pasteSpec);
@@ -1229,9 +1229,9 @@ number of item processed
       Signal      = 'APPEND';
       SignalValue = $Append;
       Keys        = @{
-        'LOOPZ.REMY.APPENDAGE'      = $Append;
-        'LOOPZ.REMY.ACTION'         = 'Add-Appendage';
-        'LOOPZ.REMY.APPENDAGE.TYPE' = 'Append';
+        'BULKRN.REMY.APPENDAGE'      = $Append;
+        'BULKRN.REMY.ACTION'         = 'Add-Appendage';
+        'BULKRN.REMY.APPENDAGE.TYPE' = 'Append';
       }
     }
     $bootStrap.Register($appendSpec);
@@ -1247,9 +1247,9 @@ number of item processed
       Signal      = 'PREPEND';
       SignalValue = $Prepend;
       Keys        = @{
-        'LOOPZ.REMY.APPENDAGE'      = $Prepend;
-        'LOOPZ.REMY.ACTION'         = 'Add-Appendage';
-        'LOOPZ.REMY.APPENDAGE.TYPE' = 'Prepend';
+        'BULKRN.REMY.APPENDAGE'      = $Prepend;
+        'BULKRN.REMY.ACTION'         = 'Add-Appendage';
+        'BULKRN.REMY.APPENDAGE.TYPE' = 'Prepend';
       }
     }
     $bootStrap.Register($prependSpec);
@@ -1266,8 +1266,8 @@ number of item processed
       Force       = 'Props';
       SignalValue = $signals['SWITCH-ON'].Value;
       Keys        = @{
-        'LOOPZ.REMY.ACTION'      = 'Move-Match';
-        'LOOPZ.REMY.ANCHOR-TYPE' = 'START';
+        'BULKRN.REMY.ACTION'      = 'Move-Match';
+        'BULKRN.REMY.ANCHOR-TYPE' = 'START';
       };
     }
     $bootStrap.Register($startSpec);
@@ -1284,8 +1284,8 @@ number of item processed
       Force       = 'Props';
       SignalValue = $signals['SWITCH-ON'].Value;
       Keys        = @{
-        'LOOPZ.REMY.ACTION'      = 'Move-Match';
-        'LOOPZ.REMY.ANCHOR-TYPE' = 'END';
+        'BULKRN.REMY.ACTION'      = 'Move-Match';
+        'BULKRN.REMY.ANCHOR-TYPE' = 'END';
       };
     }
     $bootStrap.Register($endSpec);
@@ -1302,8 +1302,8 @@ number of item processed
       SignalValue = $Drop;
       Force       = 'Wide';
       Keys        = @{
-        'LOOPZ.REMY.DROP'   = $Drop;
-        'LOOPZ.REMY.MARKER' = $BulkRn.Defaults.Remy.Marker;
+        'BULKRN.REMY.DROP'   = $Drop;
+        'BULKRN.REMY.MARKER' = $BulkRn.Defaults.Remy.Marker;
       }
     }
     $bootStrap.Register($dropSpec);
@@ -1330,7 +1330,7 @@ number of item processed
       SignalValue = $signals['SWITCH-ON'].Value;
       Force       = 'Wide';
       Keys        = @{
-        'LOOPZ.REMY.TRANSFORM' = $Transform;
+        'BULKRN.REMY.TRANSFORM' = $Transform;
       }
     }
     $bootStrap.Register($transformSpec);
@@ -1354,7 +1354,7 @@ number of item processed
       SignalValue = $($operant ? $operant.Shell.FullPath : $signals['SWITCH-OFF'].Value);
       Force       = 'Wide';
       Keys        = @{
-        'LOOPZ.REMY.UNDO' = $operant;
+        'BULKRN.REMY.UNDO' = $operant;
       }
     }
     $bootStrap.Register($undoSpec);
@@ -1368,7 +1368,7 @@ number of item processed
       SpecType = 'simple';
       Value    = $Relation;
       Keys     = @{
-        'LOOPZ.REMY.RELATION' = $Relation;
+        'BULKRN.REMY.RELATION' = $Relation;
       }
     }
     $bootStrap.Register($relationSpec);
@@ -1382,11 +1382,11 @@ number of item processed
       Value          = $Cut;
       Signal         = 'CUT-A';
       WholeSpecifier = 'u';
-      RegExKey       = 'LOOPZ.REMY.CUT-REGEX';
-      OccurrenceKey  = 'LOOPZ.REMY.CUT-OCC';
+      RegExKey       = 'BULKRN.REMY.CUT-REGEX';
+      OccurrenceKey  = 'BULKRN.REMY.CUT-OCC';
       Keys           = @{
-        'LOOPZ.REMY.ACTION'      = 'Move-Match';
-        'LOOPZ.REMY.ANCHOR-TYPE' = 'CUT';
+        'BULKRN.REMY.ACTION'      = 'Move-Match';
+        'BULKRN.REMY.ANCHOR-TYPE' = 'CUT';
       }
     }
     $bootStrap.Register($cutSpec);
@@ -1434,7 +1434,7 @@ number of item processed
       Name      = 'IsUpdate';
       SpecType  = 'simple';
       Keys      = @{
-        'LOOPZ.REMY.ACTION' = 'Update-Match';
+        'BULKRN.REMY.ACTION' = 'Update-Match';
       }
     }
 

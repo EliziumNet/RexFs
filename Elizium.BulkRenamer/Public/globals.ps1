@@ -8,8 +8,8 @@ $global:BulkRn = [PSCustomObject]@{
         Title             = 'Rename';
         ItemMessage       = 'Rename Item';
         SummaryMessage    = 'Rename Summary';
-        Locked            = 'LOOPZ_REMY_LOCKED';
-        UndoDisabledEnVar = 'LOOPZ_REMY_UNDO_DISABLED';
+        Locked            = 'BULKRN_REMY_LOCKED';
+        UndoDisabledEnVar = 'BULKRN_REMY_UNDO_DISABLED';
         OperantShortCode  = 'remy';
       }
     }

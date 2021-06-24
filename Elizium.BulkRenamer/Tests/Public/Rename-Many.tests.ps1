@@ -335,8 +335,8 @@ Describe 'Rename-Many' -Tag 'remy' {
             Title             = 'TITLE';
             ItemMessage       = 'Widget *{_fileSystemItemType}';
             SummaryMessage    = '... and finally';
-            Locked            = 'LOOPZ_REMY_LOCKED';
-            UndoDisabledEnVar = 'LOOPZ_REMY_UNDO_DISABLED';
+            Locked            = 'BULKRN_REMY_LOCKED';
+            UndoDisabledEnVar = 'BULKRN_REMY_UNDO_DISABLED';
           }
 
           Get-ChildItem -Path $_directoryPath | Rename-Many -Context $context -File `
