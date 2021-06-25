@@ -22,7 +22,7 @@ function Move-Match {
   inside $Paste/$With.
 
   .LINK
-    https://eliziumnet.github.io/Loopz/
+    https://eliziumnet.github.io/BulkRenamer/
 
   .PARAMETER Anchor
     Anchor is a regular expression string applied to $Value (after the $Pattern match has

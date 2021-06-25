@@ -77,7 +77,7 @@ function Rename-Many {
   escaping.
 
   .LINK
-    https://eliziumnet.github.io/Loopz/
+    https://eliziumnet.github.io/BulkRenamer/
 
   .PARAMETER Anchor
     Indicates that the rename operation will be a move of the token from its original point
@@ -248,7 +248,7 @@ function Rename-Many {
   * $0: the pattern match
   * ${_a}: the anchor match
   * ${_c}: the copy match
-number of item processed
+
   When $Pattern contains named capture groups, these variables can also be referenced. Eg if the
   $Pattern is defined as '(?<day>\d{1,2})-(?<mon>\d{1,2})-(?<year>\d{4})', then the variables
   ${day}, ${mon} and ${year} also become available for use in $With or $Paste.

@@ -16,7 +16,7 @@ function Add-Appendage {
   appendage as ${<group-name-ref>}
 
   .LINK
-    https://eliziumnet.github.io/Loopz/
+    https://eliziumnet.github.io/BulkRenamer/
 
   .PARAMETER Value
     The source value against which regular expressions are applied.
