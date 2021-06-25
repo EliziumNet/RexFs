@@ -15,7 +15,7 @@ function Test-IsAlreadyAnchoredAt {
   the index and length of that match instance.
 
   .LINK
-    https://eliziumnet.github.io/Loopz/
+    https://eliziumnet.github.io/BulkRenamer/
 
   .PARAMETER Source
     The input source

@@ -18,7 +18,7 @@ function Update-Match {
   Copy and Paste that defines what to insert.
 
   .LINK
-    https://eliziumnet.github.io/Loopz/
+    https://eliziumnet.github.io/BulkRenamer/
 
   .PARAMETER Copy
     Regular expression string applied to $Value (after the $Pattern match has been removed),

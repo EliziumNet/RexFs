@@ -17,7 +17,7 @@ function Format-Escape {
   of the pattern. The tilde is not taken as part of the pattern and is stripped off.
 
   .LINK
-    https://eliziumnet.github.io/Loopz/
+    https://eliziumnet.github.io/BulkRenamer/
 
   .PARAMETER Source
     The source string to escape.
