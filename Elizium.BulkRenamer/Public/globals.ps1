@@ -46,6 +46,27 @@ $global:BulkRn = [PSCustomObject]@{
       },
 
       @{
+        ID             = 'Dashes';
+        'IsApplicable' = [scriptblock] {
+          param([string]$_Input)
+          $_Input -match '(?:\s{,2})?(?:-\s+-)|(?:--)(?:\s{,2})?';
+        };
+
+        'Transform'    = [scriptblock] {
+          param([string]$_Input)
+
+          [regex]$regex = [regex]::new('(?:\s{,2})?(?:-\s+-)|(?:--)(?:\s{,2})?');
+          [string]$result = $_Input;
+          
+          while ($regex.IsMatch($result)) {
+            $result = $regex.Replace($result, ' - ');
+          }
+          $result;
+        };
+        'Signal'       = 'REMY.DASHES'
+      },
+
+      @{
         ID             = 'Spaces';
         'IsApplicable' = [scriptblock] {
           param([string]$_Input)
