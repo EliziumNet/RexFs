@@ -1044,7 +1044,7 @@ function Rename-Many {
 
     [BootStrap]$bootStrap = New-BootStrap `
       -Exchange $rendezvous `
-      -Containers @{ Wide = [line]::new(); Props = [line]::new(); } `
+      -Containers $containers `
       -Options $bootStrapOptions;
 
     # ------------------------------------------------ [ Primary Entities ] ---
@@ -1068,9 +1068,6 @@ function Rename-Many {
 
     if ($PSBoundParameters.ContainsKey('Pattern') -and -not([string]::IsNullOrEmpty($Pattern))) {
       [string]$patternExpression, [string]$patternOccurrence = Resolve-PatternOccurrence $Pattern
-
-      Select-SignalContainer -Containers $containers -Name 'PATTERN' `
-        -Value $patternExpression -Signals $signals;
     }
 
     # [Anchor]
