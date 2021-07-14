@@ -1,7 +1,7 @@
 using namespace System.Management.Automation;
 using namespace Elizium.Loopz;
 
-Describe 'bootstrap (remy)' -Tag 'Current' {
+Describe 'bootstrap (remy)' {
   BeforeAll {
     Get-Module Elizium.BulkRenamer | Remove-Module -Force;
     Import-Module .\Output\Elizium.BulkRenamer\Elizium.BulkRenamer.psm1 `

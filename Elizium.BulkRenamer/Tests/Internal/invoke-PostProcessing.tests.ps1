@@ -12,6 +12,7 @@ Describe 'invoke-PostProcessing' {
         'TRIM'            = kp(@('Trim', '🍀'));
         'MULTI-SPACES'    = kp(@('Spaces', '🐠'));
         'MISSING-CAPTURE' = kp(@('Missing Capture', '🐬'));
+        'REMY.DASHES'     = kp(@('Dashes', '🐦'));
       }
     }
   }
@@ -60,6 +61,35 @@ Describe 'invoke-PostProcessing' {
         $post.TransformResult | Should -BeExactly 'this is a trim-able result';
         $post.Signals | Should -HaveCount 1;
         $post.Signals[0] | Should -BeExactly 'TRIM';
+        $post.Indication | Should -Not -BeNullOrEmpty;
+
+        Write-Debug ">>> INDICATION: '$($post.Label)' > '$($post.Indication)'";
+      }
+    }
+  }
+
+  Context 'given: input source with <Dashes>' {
+    It 'should: apply DASHES rule' -TestCases @(
+      @{ Dashes = '- -'; },
+      @{ Dashes = '--'; },
+      @{ Dashes = '- - -- -'; }
+      @{ Dashes = '- -- -'; }
+      @{ Dashes = '- - -'; }
+      @{ Dashes = '- --- -'; }
+    ) {
+      InModuleScope Elizium.BulkRenamer -Parameters @{ Dashes = $Dashes } {
+        param(
+          [string]$Dashes
+        )
+        [string]$source = "Summer Solstice$($Dashes)by Fields Of The Nephilim";
+
+        [PSCustomObject]$post = invoke-PostProcessing -InputSource $source -Rules $BulkRn.Rules.Remy `
+          -Signals $_signals;
+
+        $post.Modified | Should -BeTrue;
+        $post.TransformResult | Should -BeExactly 'Summer Solstice - by Fields Of The Nephilim';
+        $post.Signals.Count | Should -BeGreaterThan 0;
+        $post.Signals[0] | Should -BeExactly 'REMY.DASHES';
         $post.Indication | Should -Not -BeNullOrEmpty;
 
         Write-Debug ">>> INDICATION: '$($post.Label)' > '$($post.Indication)'";
