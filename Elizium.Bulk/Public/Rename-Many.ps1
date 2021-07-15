@@ -547,7 +547,7 @@ function Rename-Many {
         [Parameter(Mandatory)]
         $endAdapter
       )
-      [string]$action = $_exchange['BULKRN.REMY.ACTION'];
+      [string]$action = $_exchange['BULK.REMY.ACTION'];
       [boolean]$diagnose = ($_exchange.ContainsKey('LOOPZ.DIAGNOSE') -and
         $_exchange['LOOPZ.DIAGNOSE']);
       [string]$adjustedName = $endAdapter.GetAdjustedName();
@@ -562,8 +562,8 @@ function Rename-Many {
         #
         [hashtable]$_params = @{
           'Value'     = $adjustedName;
-          'Appendage' = $exchange['BULKRN.REMY.APPENDAGE'];
-          'Type'      = $exchange['BULKRN.REMY.APPENDAGE.TYPE'];
+          'Appendage' = $exchange['BULK.REMY.APPENDAGE'];
+          'Type'      = $exchange['BULK.REMY.APPENDAGE.TYPE'];
         }
 
         $_params;
@@ -577,49 +577,49 @@ function Rename-Many {
 
         # Pattern is present for all actions except Cut
         #
-        if ($exchange.ContainsKey('BULKRN.REMY.PATTERN-REGEX')) {
-          $_params['Pattern'] = $exchange['BULKRN.REMY.PATTERN-REGEX'];
+        if ($exchange.ContainsKey('BULK.REMY.PATTERN-REGEX')) {
+          $_params['Pattern'] = $exchange['BULK.REMY.PATTERN-REGEX'];
 
-          $_params['PatternOccurrence'] = $exchange.ContainsKey('BULKRN.REMY.PATTERN-OCC') `
-            ? $exchange['BULKRN.REMY.PATTERN-OCC'] : 'f';
+          $_params['PatternOccurrence'] = $exchange.ContainsKey('BULK.REMY.PATTERN-OCC') `
+            ? $exchange['BULK.REMY.PATTERN-OCC'] : 'f';
         }
-        elseif ($exchange.ContainsKey('BULKRN.REMY.CUT-REGEX')) {
-          $_params['Cut'] = $exchange['BULKRN.REMY.CUT-REGEX'];
+        elseif ($exchange.ContainsKey('BULK.REMY.CUT-REGEX')) {
+          $_params['Cut'] = $exchange['BULK.REMY.CUT-REGEX'];
 
-          $_params['CutOccurrence'] = $exchange.ContainsKey('BULKRN.REMY.CUT-OCC') `
-            ? $exchange['BULKRN.REMY.CUT-OCC'] : 'f';
+          $_params['CutOccurrence'] = $exchange.ContainsKey('BULK.REMY.CUT-OCC') `
+            ? $exchange['BULK.REMY.CUT-OCC'] : 'f';
         }
 
         if ($action -eq 'Move-Match') {
-          if ($exchange.ContainsKey('BULKRN.REMY.ANCHOR.REGEX')) {
-            $_params['Anchor'] = $exchange['BULKRN.REMY.ANCHOR.REGEX'];
+          if ($exchange.ContainsKey('BULK.REMY.ANCHOR.REGEX')) {
+            $_params['Anchor'] = $exchange['BULK.REMY.ANCHOR.REGEX'];
           }
-          if ($exchange.ContainsKey('BULKRN.REMY.ANCHOR-OCC')) {
-            $_params['AnchorOccurrence'] = $exchange['BULKRN.REMY.ANCHOR-OCC'];
-          }
-
-          if ($exchange.ContainsKey('BULKRN.REMY.DROP')) {
-            $_params['Drop'] = $exchange['BULKRN.REMY.DROP'];
-            $_params['Marker'] = $exchange['BULKRN.REMY.MARKER'];
+          if ($exchange.ContainsKey('BULK.REMY.ANCHOR-OCC')) {
+            $_params['AnchorOccurrence'] = $exchange['BULK.REMY.ANCHOR-OCC'];
           }
 
-          switch ($exchange['BULKRN.REMY.ANCHOR-TYPE']) {
+          if ($exchange.ContainsKey('BULK.REMY.DROP')) {
+            $_params['Drop'] = $exchange['BULK.REMY.DROP'];
+            $_params['Marker'] = $exchange['BULK.REMY.MARKER'];
+          }
+
+          switch ($exchange['BULK.REMY.ANCHOR-TYPE']) {
             'MATCHED-ITEM' {
-              if ($exchange.ContainsKey('BULKRN.REMY.RELATION')) {
-                $_params['Relation'] = $exchange['BULKRN.REMY.RELATION'];
+              if ($exchange.ContainsKey('BULK.REMY.RELATION')) {
+                $_params['Relation'] = $exchange['BULK.REMY.RELATION'];
               }
               break;
             }
             'HYBRID-START' {
-              if ($exchange.ContainsKey('BULKRN.REMY.RELATION')) {
-                $_params['Relation'] = $exchange['BULKRN.REMY.RELATION'];
+              if ($exchange.ContainsKey('BULK.REMY.RELATION')) {
+                $_params['Relation'] = $exchange['BULK.REMY.RELATION'];
               }
               $_params['Start'] = $true;
               break;
             }
             'HYBRID-END' {
-              if ($exchange.ContainsKey('BULKRN.REMY.RELATION')) {
-                $_params['Relation'] = $exchange['BULKRN.REMY.RELATION'];
+              if ($exchange.ContainsKey('BULK.REMY.RELATION')) {
+                $_params['Relation'] = $exchange['BULK.REMY.RELATION'];
               }
               $_params['End'] = $true;
               break;
@@ -637,7 +637,7 @@ function Rename-Many {
               break;
             }
             default {
-              throw "doRenameFsItems: encountered Invalid 'BULKRN.REMY.ANCHOR-TYPE': '$AnchorType'";
+              throw "doRenameFsItems: encountered Invalid 'BULK.REMY.ANCHOR-TYPE': '$AnchorType'";
             }
           }
         } # $action
@@ -651,20 +651,20 @@ function Rename-Many {
         $actionParameters['Diagnose'] = $exchange['LOOPZ.DIAGNOSE'];
       }
 
-      if ($exchange.ContainsKey('BULKRN.REMY.COPY.REGEX')) {
-        $actionParameters['Copy'] = $exchange['BULKRN.REMY.COPY.REGEX'];
+      if ($exchange.ContainsKey('BULK.REMY.COPY.REGEX')) {
+        $actionParameters['Copy'] = $exchange['BULK.REMY.COPY.REGEX'];
 
-        if ($exchange.ContainsKey('BULKRN.REMY.COPY-OCC')) {
-          $actionParameters['CopyOccurrence'] = $exchange['BULKRN.REMY.COPY-OCC'];
+        if ($exchange.ContainsKey('BULK.REMY.COPY-OCC')) {
+          $actionParameters['CopyOccurrence'] = $exchange['BULK.REMY.COPY-OCC'];
         }
       }
 
-      if ($exchange.ContainsKey('BULKRN.REMY.WITH')) {
-        $actionParameters['With'] = $exchange['BULKRN.REMY.WITH'];
+      if ($exchange.ContainsKey('BULK.REMY.WITH')) {
+        $actionParameters['With'] = $exchange['BULK.REMY.WITH'];
       }
 
-      if ($exchange.ContainsKey('BULKRN.REMY.PASTE')) {
-        $actionParameters['Paste'] = $exchange['BULKRN.REMY.PASTE'];
+      if ($exchange.ContainsKey('BULK.REMY.PASTE')) {
+        $actionParameters['Paste'] = $exchange['BULK.REMY.PASTE'];
       }
 
       return $actionParameters;
@@ -718,7 +718,7 @@ function Rename-Many {
 
       $endAdapter = New-EndAdapter($_underscore);
 
-      [string]$action = $_exchange['BULKRN.REMY.ACTION'];
+      [string]$action = $_exchange['BULK.REMY.ACTION'];
       [boolean]$performDiagnosis = ($_exchange.ContainsKey('LOOPZ.DIAGNOSE') -and
         $_exchange['LOOPZ.DIAGNOSE']);
 
@@ -749,8 +749,8 @@ function Rename-Many {
       }
 
       try {
-        if ([string]::IsNullOrEmpty($errorReason) -and $_exchange.ContainsKey('BULKRN.REMY.TRANSFORM')) {
-          [scriptblock]$transform = $_exchange['BULKRN.REMY.TRANSFORM'];
+        if ([string]::IsNullOrEmpty($errorReason) -and $_exchange.ContainsKey('BULK.REMY.TRANSFORM')) {
+          [scriptblock]$transform = $_exchange['BULK.REMY.TRANSFORM'];
 
           if ($transform) {
             [string]$transformed = $transform.InvokeReturnAsIs(
@@ -801,8 +801,8 @@ function Rename-Many {
         try {
           $product = rename-FsItem -From $_underscore -To $newItemName -WhatIf:$whatIf -UndoOperant $operant;
 
-          [UndoRename]$operant = $_exchange.ContainsKey('BULKRN.REMY.UNDO') `
-            ? $_exchange['BULKRN.REMY.UNDO'] : $null;
+          [UndoRename]$operant = $_exchange.ContainsKey('BULK.REMY.UNDO') `
+            ? $_exchange['BULK.REMY.UNDO'] : $null;
           $trigger = $true;
         }
         catch {
@@ -818,8 +818,8 @@ function Rename-Many {
       #
       [string]$fileSystemItemType = $itemIsDirectory ? 'Directory' : 'File';
 
-      [PSCustomObject]$context = $_exchange['BULKRN.REMY.CONTEXT'];
-      [int]$maxItemMessageSize = $_exchange['BULKRN.REMY.MAX-ITEM-MESSAGE-SIZE'];
+      [PSCustomObject]$context = $_exchange['BULK.REMY.CONTEXT'];
+      [int]$maxItemMessageSize = $_exchange['BULK.REMY.MAX-ITEM-MESSAGE-SIZE'];
       [string]$normalisedItemMessage = $Context.ItemMessage.replace(
         $Loopz.FsItemTypePlaceholder, $fileSystemItemType);
 
@@ -838,7 +838,7 @@ function Rename-Many {
         -Signals $signals -CustomLabel $messageLabel -Format '   [{1}] {0}';
 
       [int]$magic = 5;
-      [int]$indent = $_exchange['BULKRN.REMY.FIXED-INDENT'] + $message.Length - $magic;
+      [int]$indent = $_exchange['BULK.REMY.FIXED-INDENT'] + $message.Length - $magic;
       $_exchange['LOOPZ.WH-FOREACH-DECORATOR.INDENT'] = $indent;
       $_exchange['LOOPZ.WH-FOREACH-DECORATOR.MESSAGE'] = $message;
       $_exchange['LOOPZ.WH-FOREACH-DECORATOR.PRODUCT-LABEL'] = $(Get-PaddedLabel -Label $(
@@ -846,7 +846,7 @@ function Rename-Many {
 
       if (-not([string]::IsNullOrEmpty($errorReason))) {
         $null = $lines += (New-Line(
-            New-Pair(@($_exchange['BULKRN.REMY.FROM-LABEL'], $_underscore.Name))
+            New-Pair(@($_exchange['BULK.REMY.FROM-LABEL'], $_underscore.Name))
           ));
 
         [couplet]$errorSignal = Get-FormattedSignal -Name 'BAD-A' `
@@ -859,7 +859,7 @@ function Rename-Many {
       }
       elseif ($trigger) {
         $null = $lines += (New-Line(
-            New-Pair(@($_exchange['BULKRN.REMY.FROM-LABEL'], $_underscore.Name))
+            New-Pair(@($_exchange['BULK.REMY.FROM-LABEL'], $_underscore.Name))
           ));
       }
       else {
@@ -1022,12 +1022,12 @@ function Rename-Many {
       'LOOPZ.SUMMARY-BLOCK.LINE'              = $LoopzUI.EqualsLine;
       'LOOPZ.SUMMARY-BLOCK.MESSAGE'           = $summaryMessage;
 
-      'BULKRN.REMY.CONTEXT'                   = $Context;
-      'BULKRN.REMY.MAX-ITEM-MESSAGE-SIZE'     = $maxItemMessageSize;
-      'BULKRN.REMY.FIXED-INDENT'              = get-fixedIndent -Theme $theme;
-      'BULKRN.REMY.FROM-LABEL'                = Get-PaddedLabel -Label 'From' -Width 9;
+      'BULK.REMY.CONTEXT'                   = $Context;
+      'BULK.REMY.MAX-ITEM-MESSAGE-SIZE'     = $maxItemMessageSize;
+      'BULK.REMY.FIXED-INDENT'              = get-fixedIndent -Theme $theme;
+      'BULK.REMY.FROM-LABEL'                = Get-PaddedLabel -Label 'From' -Width 9;
 
-      'BULKRN.REMY.USER-PARAMS'               = $PSBoundParameters;
+      'BULK.REMY.USER-PARAMS'               = $PSBoundParameters;
     }
 
     [string]$adjustedWhole = if ($PSBoundParameters.ContainsKey('Whole')) {
@@ -1061,8 +1061,8 @@ function Rename-Many {
       Value          = $Pattern;
       Signal         = 'PATTERN';
       WholeSpecifier = 'p';
-      RegExKey       = 'BULKRN.REMY.PATTERN-REGEX';
-      OccurrenceKey  = 'BULKRN.REMY.PATTERN-OCC';
+      RegExKey       = 'BULK.REMY.PATTERN-REGEX';
+      OccurrenceKey  = 'BULK.REMY.PATTERN-OCC';
     }
     $bootStrap.Register($patternSpec);
 
@@ -1080,11 +1080,11 @@ function Rename-Many {
       Value          = $Anchor;
       Signal         = 'REMY.ANCHOR';
       WholeSpecifier = 'a';
-      RegExKey       = 'BULKRN.REMY.ANCHOR.REGEX';
-      OccurrenceKey  = 'BULKRN.REMY.ANCHOR-OCC';
+      RegExKey       = 'BULK.REMY.ANCHOR.REGEX';
+      OccurrenceKey  = 'BULK.REMY.ANCHOR-OCC';
       Keys           = @{
-        'BULKRN.REMY.ACTION'      = 'Move-Match';
-        'BULKRN.REMY.ANCHOR-TYPE' = 'MATCHED-ITEM';
+        'BULK.REMY.ACTION'      = 'Move-Match';
+        'BULK.REMY.ANCHOR-TYPE' = 'MATCHED-ITEM';
       }
     }
     $bootStrap.Register($anchorSpec);
@@ -1099,11 +1099,11 @@ function Rename-Many {
       Value          = $AnchorStart;
       Signal         = 'REMY.ANCHOR';
       WholeSpecifier = 'a';
-      RegExKey       = 'BULKRN.REMY.ANCHOR.REGEX';
-      OccurrenceKey  = 'BULKRN.REMY.ANCHOR-OCC';
+      RegExKey       = 'BULK.REMY.ANCHOR.REGEX';
+      OccurrenceKey  = 'BULK.REMY.ANCHOR-OCC';
       Keys           = @{
-        'BULKRN.REMY.ACTION'      = 'Move-Match';
-        'BULKRN.REMY.ANCHOR-TYPE' = 'HYBRID-START';
+        'BULK.REMY.ACTION'      = 'Move-Match';
+        'BULK.REMY.ANCHOR-TYPE' = 'HYBRID-START';
       }
     }
     $bootStrap.Register($anchorStartSpec);
@@ -1118,11 +1118,11 @@ function Rename-Many {
       Value          = $AnchorEnd;
       Signal         = 'REMY.ANCHOR';
       WholeSpecifier = 'a';
-      RegExKey       = 'BULKRN.REMY.ANCHOR.REGEX';
-      OccurrenceKey  = 'BULKRN.REMY.ANCHOR-OCC';
+      RegExKey       = 'BULK.REMY.ANCHOR.REGEX';
+      OccurrenceKey  = 'BULK.REMY.ANCHOR-OCC';
       Keys           = @{
-        'BULKRN.REMY.ACTION'      = 'Move-Match';
-        'BULKRN.REMY.ANCHOR-TYPE' = 'HYBRID-END';
+        'BULK.REMY.ACTION'      = 'Move-Match';
+        'BULK.REMY.ANCHOR-TYPE' = 'HYBRID-END';
       }
     }
     $bootStrap.Register($anchorEndSpec);
@@ -1137,8 +1137,8 @@ function Rename-Many {
       Value          = $Copy;
       Signal         = 'COPY-A';
       WholeSpecifier = 'c';
-      RegExKey       = 'BULKRN.REMY.COPY.REGEX';
-      OccurrenceKey  = 'BULKRN.REMY.COPY-OCC';
+      RegExKey       = 'BULK.REMY.COPY.REGEX';
+      OccurrenceKey  = 'BULK.REMY.COPY-OCC';
     }
     $bootStrap.Register($copySpec);
 
@@ -1153,7 +1153,7 @@ function Rename-Many {
       Signal      = 'WITH';
       SignalValue = $With;
       Keys        = @{
-        'BULKRN.REMY.WITH' = $With;
+        'BULK.REMY.WITH' = $With;
       }
     }
     $bootStrap.Register($withSpec);
@@ -1167,8 +1167,8 @@ function Rename-Many {
       Name          = 'Include';
       Value         = $Include;
       Signal        = 'INCLUDE';
-      RegExKey      = 'BULKRN.REMY.INCLUDE.REGEX';
-      OccurrenceKey = 'BULKRN.REMY.INCLUDE-OCC';
+      RegExKey      = 'BULK.REMY.INCLUDE.REGEX';
+      OccurrenceKey = 'BULK.REMY.INCLUDE-OCC';
     }
     $bootStrap.Register($includeSpec);
 
@@ -1181,8 +1181,8 @@ function Rename-Many {
       Name          = 'Except';
       Value         = $Except;
       Signal        = 'EXCLUDE';
-      RegExKey      = 'BULKRN.REMY.EXCLUDE.REGEX';
-      OccurrenceKey = 'BULKRN.REMY.EXCLUDE-OCC';
+      RegExKey      = 'BULK.REMY.EXCLUDE.REGEX';
+      OccurrenceKey = 'BULK.REMY.EXCLUDE-OCC';
     }
     $bootStrap.Register($exceptSpec);
 
@@ -1210,7 +1210,7 @@ function Rename-Many {
       Signal      = 'PASTE-A';
       SignalValue = $Paste;
       Keys        = @{
-        'BULKRN.REMY.PASTE' = $Paste;
+        'BULK.REMY.PASTE' = $Paste;
       }
     }
     $bootStrap.Register($pasteSpec);
@@ -1226,9 +1226,9 @@ function Rename-Many {
       Signal      = 'APPEND';
       SignalValue = $Append;
       Keys        = @{
-        'BULKRN.REMY.APPENDAGE'      = $Append;
-        'BULKRN.REMY.ACTION'         = 'Add-Appendage';
-        'BULKRN.REMY.APPENDAGE.TYPE' = 'Append';
+        'BULK.REMY.APPENDAGE'      = $Append;
+        'BULK.REMY.ACTION'         = 'Add-Appendage';
+        'BULK.REMY.APPENDAGE.TYPE' = 'Append';
       }
     }
     $bootStrap.Register($appendSpec);
@@ -1244,9 +1244,9 @@ function Rename-Many {
       Signal      = 'PREPEND';
       SignalValue = $Prepend;
       Keys        = @{
-        'BULKRN.REMY.APPENDAGE'      = $Prepend;
-        'BULKRN.REMY.ACTION'         = 'Add-Appendage';
-        'BULKRN.REMY.APPENDAGE.TYPE' = 'Prepend';
+        'BULK.REMY.APPENDAGE'      = $Prepend;
+        'BULK.REMY.ACTION'         = 'Add-Appendage';
+        'BULK.REMY.APPENDAGE.TYPE' = 'Prepend';
       }
     }
     $bootStrap.Register($prependSpec);
@@ -1263,8 +1263,8 @@ function Rename-Many {
       Force       = 'Props';
       SignalValue = $signals['SWITCH-ON'].Value;
       Keys        = @{
-        'BULKRN.REMY.ACTION'      = 'Move-Match';
-        'BULKRN.REMY.ANCHOR-TYPE' = 'START';
+        'BULK.REMY.ACTION'      = 'Move-Match';
+        'BULK.REMY.ANCHOR-TYPE' = 'START';
       };
     }
     $bootStrap.Register($startSpec);
@@ -1281,8 +1281,8 @@ function Rename-Many {
       Force       = 'Props';
       SignalValue = $signals['SWITCH-ON'].Value;
       Keys        = @{
-        'BULKRN.REMY.ACTION'      = 'Move-Match';
-        'BULKRN.REMY.ANCHOR-TYPE' = 'END';
+        'BULK.REMY.ACTION'      = 'Move-Match';
+        'BULK.REMY.ANCHOR-TYPE' = 'END';
       };
     }
     $bootStrap.Register($endSpec);
@@ -1299,8 +1299,8 @@ function Rename-Many {
       SignalValue = $Drop;
       Force       = 'Wide';
       Keys        = @{
-        'BULKRN.REMY.DROP'   = $Drop;
-        'BULKRN.REMY.MARKER' = $Bulk.Defaults.Remy.Marker;
+        'BULK.REMY.DROP'   = $Drop;
+        'BULK.REMY.MARKER' = $Bulk.Defaults.Remy.Marker;
       }
     }
     $bootStrap.Register($dropSpec);
@@ -1327,7 +1327,7 @@ function Rename-Many {
       SignalValue = $signals['SWITCH-ON'].Value;
       Force       = 'Wide';
       Keys        = @{
-        'BULKRN.REMY.TRANSFORM' = $Transform;
+        'BULK.REMY.TRANSFORM' = $Transform;
       }
     }
     $bootStrap.Register($transformSpec);
@@ -1351,7 +1351,7 @@ function Rename-Many {
       SignalValue = $($operant ? $operant.Shell.FullPath : $signals['SWITCH-OFF'].Value);
       Force       = 'Wide';
       Keys        = @{
-        'BULKRN.REMY.UNDO' = $operant;
+        'BULK.REMY.UNDO' = $operant;
       }
     }
     $bootStrap.Register($undoSpec);
@@ -1365,7 +1365,7 @@ function Rename-Many {
       SpecType = 'simple';
       Value    = $Relation;
       Keys     = @{
-        'BULKRN.REMY.RELATION' = $Relation;
+        'BULK.REMY.RELATION' = $Relation;
       }
     }
     $bootStrap.Register($relationSpec);
@@ -1379,11 +1379,11 @@ function Rename-Many {
       Value          = $Cut;
       Signal         = 'CUT-A';
       WholeSpecifier = 'u';
-      RegExKey       = 'BULKRN.REMY.CUT-REGEX';
-      OccurrenceKey  = 'BULKRN.REMY.CUT-OCC';
+      RegExKey       = 'BULK.REMY.CUT-REGEX';
+      OccurrenceKey  = 'BULK.REMY.CUT-OCC';
       Keys           = @{
-        'BULKRN.REMY.ACTION'      = 'Move-Match';
-        'BULKRN.REMY.ANCHOR-TYPE' = 'CUT';
+        'BULK.REMY.ACTION'      = 'Move-Match';
+        'BULK.REMY.ANCHOR-TYPE' = 'CUT';
       }
     }
     $bootStrap.Register($cutSpec);
@@ -1431,7 +1431,7 @@ function Rename-Many {
       Name      = 'IsUpdate';
       SpecType  = 'simple';
       Keys      = @{
-        'BULKRN.REMY.ACTION' = 'Update-Match';
+        'BULK.REMY.ACTION' = 'Update-Match';
       }
     }
 

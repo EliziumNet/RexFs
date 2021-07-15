@@ -43,8 +43,8 @@ Describe 'bootstrap (remy)' {
         Signal         = 'PATTERN';
         WholeSpecifier = 'p';
         Force          = 'Props';
-        RegExKey       = 'BULKRN.REMY.PATTERN-REGEX';
-        OccurrenceKey  = 'BULKRN.REMY.PATTERN-OCC';
+        RegExKey       = 'BULK.REMY.PATTERN-REGEX';
+        OccurrenceKey  = 'BULK.REMY.PATTERN-OCC';
       }
     }
   }
@@ -61,13 +61,13 @@ Describe 'bootstrap (remy)' {
             SignalValue = '${_a}, __${name}__';
             Force       = 'Props';
             Keys        = @{
-              'BULKRN.REMY.PASTE' = '${_a}, __${name}__';
+              'BULK.REMY.PASTE' = '${_a}, __${name}__';
             }
           }
           $_bootStrapper.Register($pasteSpec);
 
           [hashtable]$exchange = $_bootStrapper.Build(@());
-          $exchange.ContainsKey('BULKRN.REMY.PASTE') | Should -BeTrue;
+          $exchange.ContainsKey('BULK.REMY.PASTE') | Should -BeTrue;
           $_containers.Props.Line.Count | Should -Be 1;
           $_containers.Wide.Line.Count | Should -Be 0;
         }
@@ -83,15 +83,15 @@ Describe 'bootstrap (remy)' {
             SignalValue = 'clanger';
             Force       = 'Wide';
             Keys        = @{
-              'BULKRN.REMY.DROP'   = 'clanger';
-              'BULKRN.REMY.MARKER' = $Loopz.Defaults.Remy.Marker;
+              'BULK.REMY.DROP'   = 'clanger';
+              'BULK.REMY.MARKER' = $Loopz.Defaults.Remy.Marker;
             }
           }
           $_bootStrapper.Register($dropSpec);
 
           [hashtable]$exchange = $_bootStrapper.Build(@());
-          $exchange.ContainsKey('BULKRN.REMY.DROP') | Should -BeTrue;
-          $exchange.ContainsKey('BULKRN.REMY.MARKER') | Should -BeTrue;
+          $exchange.ContainsKey('BULK.REMY.DROP') | Should -BeTrue;
+          $exchange.ContainsKey('BULK.REMY.MARKER') | Should -BeTrue;
 
           $_containers.Props.Line.Count | Should -Be 0;
           $_containers.Wide.Line.Count | Should -Be 1;
@@ -105,8 +105,8 @@ Describe 'bootstrap (remy)' {
           $_bootStrapper.Register($_patternSpec);
 
           [hashtable]$exchange = $_bootStrapper.Build(@());
-          $exchange.ContainsKey('BULKRN.REMY.PATTERN-REGEX') | Should -BeTrue;
-          $exchange.ContainsKey('BULKRN.REMY.PATTERN-OCC') | Should -BeTrue;
+          $exchange.ContainsKey('BULK.REMY.PATTERN-REGEX') | Should -BeTrue;
+          $exchange.ContainsKey('BULK.REMY.PATTERN-OCC') | Should -BeTrue;
 
           $_containers.Props.Line.Count | Should -Be 1;
           $_containers.Wide.Line.Count | Should -Be 0;
@@ -124,15 +124,15 @@ Describe 'bootstrap (remy)' {
               Dependency    = 'Pattern'
               Name          = 'Anchored';
               Value         = '^*{_dependency}';
-              RegExKey      = 'BULKRN.REMY.ANCHORED-REGEX';
-              OccurrenceKey = 'BULKRN.REMY.ANCHORED-OCC';
+              RegExKey      = 'BULK.REMY.ANCHORED-REGEX';
+              OccurrenceKey = 'BULK.REMY.ANCHORED-OCC';
             }
             $_bootStrapper.Register($_patternSpec);
             $_bootStrapper.Register($derivedSpec);
 
             [hashtable]$exchange = $_bootStrapper.Build(@());
-            $exchange.ContainsKey('BULKRN.REMY.ANCHORED-REGEX') | Should -BeTrue;
-            $exchange.ContainsKey('BULKRN.REMY.ANCHORED-OCC') | Should -BeTrue;
+            $exchange.ContainsKey('BULK.REMY.ANCHORED-REGEX') | Should -BeTrue;
+            $exchange.ContainsKey('BULK.REMY.ANCHORED-OCC') | Should -BeTrue;
 
             $_containers.Props.Line.Count | Should -Be 1;
             $_containers.Wide.Line.Count | Should -Be 0;
@@ -157,13 +157,13 @@ Describe 'bootstrap (remy)' {
             CustomLabel = 'Start';
             Force       = 'Props';
             Keys        = @{
-              'BULKRN.REMY.ANCHOR-TYPE' = 'START';
+              'BULK.REMY.ANCHOR-TYPE' = 'START';
             }
           }
           $_bootStrapper.Register($signalSpec);
 
           [hashtable]$exchange = $_bootStrapper.Build(@());
-          $exchange.ContainsKey('BULKRN.REMY.ANCHOR-TYPE') | Should -BeTrue;
+          $exchange.ContainsKey('BULK.REMY.ANCHOR-TYPE') | Should -BeTrue;
 
           $_containers.Props.Line.Count | Should -Be 1;
           $_containers.Wide.Line.Count | Should -Be 0;
@@ -180,12 +180,12 @@ Describe 'bootstrap (remy)' {
             Name     = 'Relation';
             Value    = 'before';
             Keys     = @{
-              'BULKRN.REMY.RELATION' = 'before';
+              'BULK.REMY.RELATION' = 'before';
             }
           }
           $_bootStrapper.Register($simpleSpec);
           [hashtable]$exchange = $_bootStrapper.Build(@());
-          $exchange.ContainsKey('BULKRN.REMY.RELATION') | Should -BeTrue;
+          $exchange.ContainsKey('BULK.REMY.RELATION') | Should -BeTrue;
 
           $_containers.Props.Line.Count | Should -Be 0;
           $_containers.Wide.Line.Count | Should -Be 0;
