@@ -1,17 +1,17 @@
-# :shield: Elizium.BulkRenamer
+# :shield: Elizium.Bulk
 
 Bulk File/Directory renamer
 
 [![A B](https://img.shields.io/badge/branching-commonflow-informational?style=flat)](https://commonflow.org)
 [![A B](https://img.shields.io/badge/merge-rebase-informational?style=flat)](https://git-scm.com/book/en/v2/Git-Branching-Rebasing)
-[![A B](https://img.shields.io/github/license/eliziumnet/bulkrenamer)](https://github.com/eliziumnet/BulkRenamer/blob/master/LICENSE)
-[![A B](https://img.shields.io/powershellgallery/p/Elizium.BulkRenamer)](https://www.powershellgallery.com/packages/Elizium.BulkRenamer)
+[![A B](https://img.shields.io/github/license/eliziumnet/Bulk)](https://github.com/eliziumnet/Bulk/blob/master/LICENSE)
+[![A B](https://img.shields.io/powershellgallery/p/Elizium.Bulk)](https://www.powershellgallery.com/packages/Elizium.Bulk)
 
 ## Introduction
 
 The module can be installed using the standard **install-module** command:
 
-> PS> install-module -Name Elizium.BulkRenamer
+> PS> install-module -Name Elizium.Bulk
 
 The following dependencies will be install automatically
 
@@ -47,7 +47,7 @@ perform any renames until it has been unlocked by the user. When locked, the com
 runs as though ___$WhatIf___ has been specified. There are indications in the output to show
 that the command is in a locked state (there is an indicator in the batch header and
 a 'Novice' indicator in the summary). To activate the command, the user needs to
-set the environment variable 'BULKRN_REMY_LOCKED' to $false; ie ($env:BULKRN_REMY_LOCKED = $false, either temporarily in the session, or permanently in the powershell profile, see $Profile). The user should not
+set the environment variable 'BULK_REMY_LOCKED' to $false; ie ($env:BULK_REMY_LOCKED = $false, either temporarily in the session, or permanently in the powershell profile, see $Profile). The user should not
 unlock the command until they are comfortable with how to use this command properly
 and knows how to write regular expressions correctly. (See [regex101](regex101.com))
 
@@ -61,7 +61,7 @@ performed up to the point of the termination request.
 The name of the undo script is based upon the current date and time and is displayed
 in the summary. (The user can, if they wish disable the undo feature if they don't want
 to have to manage the accumulation of undo scripts, by setting the environment variable
-*BULKRN_REMY_UNDO_DISABLED* to $true.)
+*BULK_REMY_UNDO_DISABLED* to $true.)
 
 ### :gem: Occurrence<a name="general.occurrence"></a>
 
@@ -604,11 +604,11 @@ command line, rather it is meant for those wanting to build functionality on top
 + Title (default: 'Rename') the name used in the batch header.
 + ItemMessage (default: 'Rename Item') the operation name used for each renamed item.
 + SummaryMessage (default: 'Rename Summary') the name used in the batch summary.
-+ Locked (default: 'BULKRN_REMY_LOCKED) the name of the environment variable which controls
++ Locked (default: 'BULK_REMY_LOCKED) the name of the environment variable which controls
 the locking of the command.
-+ DisabledEnVar (default: '*BULKRN_REMY_UNDO_DISABLED*') the name of the environment variable
++ DisabledEnVar (default: '*BULK_REMY_UNDO_DISABLED*') the name of the environment variable
 which controls if the undo script feature is disabled.
-+ UndoDisabledEnVar (default: '*BULKRN_REMY_UNDO_DISABLED*') the name of the environment
++ UndoDisabledEnVar (default: '*BULK_REMY_UNDO_DISABLED*') the name of the environment
 variable which determines if the Undo feature is disabled. This allows any other function
 built on top of Rename-Many to control the undo feature for itself independently of
 Rename-Many.
@@ -981,7 +981,7 @@ This module has the following developer dependencies:
 + [platyPS](https://www.powershellgallery.com/packages/platyPS)
 + [PSScriptAnalyzer](https://www.powershellgallery.com/packages/PSScriptAnalyzer/)
 
-After cloning the repo, change to the *Elizium.BulkRenamer* directory from the root. You can look at the build script *Elizium.BulkRenamer.build.ps1*, it will contain various tasks, the most important of which are explained below
+After cloning the repo, change to the *Elizium.Bulk* directory from the root. You can look at the build script *Elizium.Bulk.build.ps1*, it will contain various tasks, the most important of which are explained below
 
 ### Running build tasks
 
@@ -1003,7 +1003,7 @@ To build the documents:
 
 #### Problem rebuilding modified classes in the same PowerShell session
 
-:warning: __BulkRenamer__ make use of PowerShell classes. Because of the nature of classes in PowerShell, re-building edited code can cause errors. This is not a fault of the __BulkRenamer__ code, it's just the way PowerShell classes have
+:warning: __Bulk__ make use of PowerShell classes. Because of the nature of classes in PowerShell, re-building edited code can cause errors. This is not a fault of the __Bulk__ code, it's just the way PowerShell classes have
 been designed.
 
 What you will find is, if a class has been modified then rebuilt in the same session, you may find multiple class errors like so:
@@ -1012,7 +1012,7 @@ What you will find is, if a class has been modified then rebuilt in the same ses
 [-] EndAdapter.given: EndAdapter.should: get name 31ms (30ms|1ms)
  PSInvalidCastException: Cannot convert the "EndAdapter" value of type "EndAdapter" to type "EndAdapter".
  ArgumentTransformationMetadataException: Cannot convert the "EndAdapter" value of type "EndAdapter" to type "EndAdapter".
- at <ScriptBlock>, C:\Users\Plastikfan\dev\github\PoSh\BulkRenamer\Elizium.BulkRenamer\Tests\Rename-Many.tests.ps1:21
+ at <ScriptBlock>, C:\Users\Plastikfan\dev\github\PoSh\Bulk\Elizium.Bulk\Tests\Rename-Many.tests.ps1:21
 ```
 
 Fear not, this is just reporting that the class definition has changed and because of this difference, one can't be substituted for another in the same PowerShell session (this is in contrast to the way functions work, where you can simply re-define a function in the same session and it will replace the previous definition. This luxury has not been afforded to classes unfortunately). All that's required is to restart a new session. The rebuild in the new session should progress without these errors.
@@ -1085,6 +1085,6 @@ After restart, tag is restored and the restart message will indicate as such
 
 The user can set this flag in the environment (just set it to any non $null value).
 
-By default, $env:EliziumTest, will not be present, this means, that the unit tests in __BulkRenamer__ will run in silent mode. However, there are some tests which are less valuable in silent mode, doing so would invalidate them to some degree. There are only a few of the tests in this category (tagged as 'Host') and it's because they require Write-Host to be invoked. Theoretically, one could mock out the Write-Host call, but some errors can be much easier to spot visually. This generally is not the best technique in unit-testing, but these test cases have been backed up by non noisy equivalents to make sure all bases are covered.
+By default, $env:EliziumTest, will not be present, this means, that the unit tests in __Bulk__ will run in silent mode. However, there are some tests which are less valuable in silent mode, doing so would invalidate them to some degree. There are only a few of the tests in this category (tagged as 'Host') and it's because they require Write-Host to be invoked. Theoretically, one could mock out the Write-Host call, but some errors can be much easier to spot visually. This generally is not the best technique in unit-testing, but these test cases have been backed up by non noisy equivalents to make sure all bases are covered.
 
 During development, it is very useful to get a visual on how ui commands are behaving. This was the rationale behind the introduction of this flag. So when *EliziumTest* is defined, the user will see more output that reflects the execution of the Scribbler and Krayon.
