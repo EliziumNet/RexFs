@@ -1,11 +1,49 @@
 # :shield: Elizium.Bulk
 
-Bulk File/Directory renamer
+___Bulk operations module with Bulk File/Directory renamer powered by [:nazar_amulet: Elizium.Loopz](https://github.com/EliziumNet/Loopz) and colouring provided by [:rainbow: __Elizium.Krayola__](https://github.com/EliziumNet/Krayola)___
 
 [![A B](https://img.shields.io/badge/branching-commonflow-informational?style=flat)](https://commonflow.org)
 [![A B](https://img.shields.io/badge/merge-rebase-informational?style=flat)](https://git-scm.com/book/en/v2/Git-Branching-Rebasing)
 [![A B](https://img.shields.io/github/license/eliziumnet/Bulk)](https://github.com/eliziumnet/Bulk/blob/master/LICENSE)
 [![A B](https://img.shields.io/powershellgallery/p/Elizium.Bulk)](https://www.powershellgallery.com/packages/Elizium.Bulk)
+
+<!-- MarkDownLint-disable no-inline-html -->
+<!-- MarkDownLint-disable no-emphasis-as-heading -->
+
+## Table Of Contents
+
++ [Introduction](#Introduction)
++ [:rocket: Quick Start](#Quick-Start)
+  + [Quick Move](#Quick-Move)
+  + [Quick Update](#Quick-Update)
++ [:sparkles: General Concepts](#general.concepts)
+  + [Safety features](#Safety-features)
+  + [Occurrence](#Occurrence)
+  + [Escaping](#Escaping)
+  + [Filtering](#Filtering)
+  + [Formatter Parameters](#Formatter-Parameters)
+  + [General Parameters](#General-Parameters)
+  + [Post Processing](#Post-Processing)
+  + [Signals](#Signals)
+  + [The Replacement Process](#The-Replacement-Process)
+  + [Saved Undo Scripts](#Saved-Undo-Scripts)
++ [:sparkles: Move Match](#Move-Match)
+  + [Move to Anchor](#Move-to-Anchor)
+  + [Move to Start](#Move-to-Start)
+  + [Move to End](#Move-to-End)
+  + [Move to Hybrid Anchor](#Move-to-Hybrid-Anchor)
++ [:sparkles: Update Match](#Update-Match)
++ [:sparkles: Cut Match](#Cut-Match)
++ [:sparkles: Add Appendage](#Add-Appendage)
+  + [Add Prefix](#Add-Prefix)
+  + [Add Suffix](#Add-Suffix)
++ [:sparkles: Parameter Reference](#parameter-reference)
++ [:radioactive: Troubleshooting / Common Errors](#troubleshooting)
++ [:hammer: Expanding Rename-Many Capabilities](#expanding-rename-many)
+  + [:mortar_board: Higher Order Commands](#higher-order-commands)
+  + [:robot: Using Transform](#using.transform)
++ [:green_salad: Recipes](#Recipes)
++ [:hammer: Developer Notes](#Developer-Notes)
 
 ## Introduction
 
@@ -13,11 +51,11 @@ The module can be installed using the standard **install-module** command:
 
 > PS> install-module -Name Elizium.Bulk
 
-The following dependencies will be install automatically
+The following dependencies will be installed automatically
 
-+ [:mortar_board: Elizium.Klassy](https://github.com/EliziumNet/Klassy)
-+ [:rainbow: Elizium.Krayola](https://github.com/EliziumNet/Krayola)
-+ [:nazar_amulet: Elizium.Loopz](https://github.com/EliziumNet/Loopz)
++ [:mortar_board: __Elizium.Klassy__](https://github.com/EliziumNet/Klassy)
++ [:rainbow: __Elizium.Krayola__](https://github.com/EliziumNet/Krayola)
++ [:nazar_amulet: __Elizium.Loopz__](https://github.com/EliziumNet/Loopz)
 
 :high_brightness: **Rename-Many** (*remy*) is a flexible regular expression based bulk rename command. In order to get the best out of this command, the user should become familiar and skilled in writing regular expressions.
 
@@ -25,7 +63,7 @@ The following dependencies will be install automatically
 See also the [Parameter Reference](#parameter-reference), for a more detailed explanation of each parameter and
 [Safety Features](#general.safety-features) to see how to *Unlock* the command so it becomes effective.
 
-There are multiple modes of operation that *Rename-Many* runs in, which are *Update*/*Move*/*Cut*/*Appendage*. On top of this, a developer can extend it capabilities by providing a custom [*Transform*](using.transform) and/or build [*Higher Order Commands*](#develop.higher-order-commands).
+There are multiple modes of operation that *Rename-Many* runs in, which are *Update*/*Move*/*Cut*/*Appendage*. On top of this, a developer can extend its capabilities by providing a custom [*Transform*](using.transform) and/or build [*Higher Order Commands*](#higher-order-commands).
 
 | Mode                                   | DESCRIPTION
 |----------------------------------------|---------------------------------------------
@@ -35,7 +73,51 @@ There are multiple modes of operation that *Rename-Many* runs in, which are *Upd
 | [Add Appendage](#action.add-appendage) | Add a fixed token to Start or End of item
 | [Transform](#using.transform)          | Apply a custom transform to perform rename
 
-## :sparkles: General Concepts
+## :rocket: Quick Start
+
+*Rename-Many works* by receiving it's input from the pipeline and renaming these file system items according to parameters specified. The benefit of using this command comes when there is a need to rename multiple items according to the same criteria. This criteria amounts to specifying regular expressions. The 2 most commonly used scenarios are:
+
++ [move](#action.move-match) a token from 1 point to another
++ [update](#action.update-match) a token in the location that it already resides
+
+### Quick Move
+
+Moves a regex match to another point, known as an anchor.
+
+Let's say we have a directory containing a collection of log files, some of which are not named according to a fixed form eg they contain a date which is not at the end of the file name. We can bulk rename the rogue files with a command like:
+
+> gci ./*.log | Rename-Many -Pattern '(?\<d>\d{2})-(?\<m>\d{2})-(?\<y>\d{4})' -End -WhatIf
+
+Note the following:
+
++ :pushpin: we assemble the source file system items with the gci (Get-ChildItems) command and pipe to Rename-Many
++ :pushpin: we define a pattern (_-Pattern_), in this case a regex to recognise a date of the form 'dd-mm-yyyy' using named group captures (__d__, __m__ and __y__), which can be referenced via the formatter parameters (___With___/___Paste___)
++ :pushpin: we want to move the date to the end so we specify ___-End___ (this is an anchor)
++ :pushpin: since we haven't run our command before, we need to run safely first so specify the ___WhatIf___ flag. (Remember, if the command has never been run, then it will be in a locked state, so even if we omitted ___WhatIf___, the command would still run in a ___WhatIf___ context, see [Safety Features](#general.safety-features))
+
+Extending this example a little further, let's say we also want to reformat the date so it's in ISO format (yyyy-mm-dd). We can achieve this by specifying the formatter parameter ___-With___ (___With___ is used for move operations, whereas ___Paste___ is used for update operations) as illustrated below:
+
+> ... | remy -Pattern '(?\<d>\d{2})-(?\<m>\d{2})-(?\<y>\d{4})' -End -With '\${y}-\${m}-\${d}' -WhatIf
+
++ :pushpin:  _remy_ is defined as an alias of _Rename-Many_
+
+In practice, there are a few more subtleties that need to be accounted for when performing bulk renames and the reader will discover this when reading the rest of this documentation. One such nuance is that moving the date like this may require the insertion of additional content to get the graceful result we require, eg wrap the date in brackets, or insert a dash before the date etc.
+
+### Quick Update
+
+Replace a regex match in it's present location with alternative content.
+
+Continuing with our log files theme, let's say we just want to adjust the date format. So any date that appears as 'dd-mm-yyyy' we would like to adjust it to ISO format 'yyyy-mm-dd' instead. We can do this using the [*update*](#action.update-match) mode of _Rename-Many_:
+
+> ... | remy -Pattern '(?\<d>\d{2})-(?\<m>\d{2})-(?\<y>\d{4})' -Paste '\${y}-\${m}-\${d}'
+
++ :pushpin: update operations do not require an anchor (___-End___/___-Start___/___-Anchor___)
++ :pushpin: the ___-Paste___ value is exactly the same as we performed in our move operation previously. This is because ___With___ and ___Paste___ do this same thing but are used in different contexts
++ :pushpin: the date is adjusted in its current location, not moved
+
+Hopefully, the above examples have given a quick insight in the operation of the command, enough to get started with. Also note, to begin with, you can initially stick to using static patterns instead of more complex regex sequences for the more simple rename operations, eg rename the presence of the word 'CCY' to 'Currency', by using a pattern of 'CCY' and ___-With___/___-Paste___ of 'Currency'.
+
+## :sparkles: General Concepts<a name="general.concepts"></a>
 
 ### :gem: Safety features<a name="general.safety-features"></a>
 
@@ -128,7 +210,7 @@ The following parameters are known as *formatters*. This means that they are str
 
 So given the following as an example (not all parameters have been defined so do not take this as a literal example)
 
-> ... | Rename-Many -Pattern '(?\<y\>\d{4})-(?\<m\>\d{2})-(?\<d\>\d{2})' -With '${d}-${m}-${y}'
+> ... | Rename-Many -Pattern '(?\<y\>\d{4})-(?\<m\>\d{2})-(?\<d\>\d{2})' -With '\${d}-\${m}-${y}'
 
 we can see that inside the ___$With___ formatter, there are references to named group captures ('d', 'm', 'y') that are defined inside the ___$Pattern___ regex.
 
@@ -249,7 +331,7 @@ Focusing on a single file item in the batch being: '**02-09 Radio Stars.mp3**':
 
 Although the order of the *DISC-NO* and *TRACK-NO* have been swapped around, this is almost certainly not what we would want. We need to maintain the dash in between them. We can't include the dash inside the ___$Pattern___ because that would just result in '0902-'. This is where the ___$With___ formatter parameter and ___$Relation___ comes into play. We can format the replacement text:
 
-:heavy_minus_sign: Rename-Many -Pattern '\d{2}' -Anchor '\d{2}' -With '${_a}-$0' -WhatIf
+:heavy_minus_sign: Rename-Many -Pattern '\d{2}' -Anchor '\d{2}' -With '\${_a}-$0' -WhatIf
 
 > -09-02 Radio Stars.mp3
 
@@ -257,21 +339,21 @@ This is starting to get better, but there is still a problem. We now have a stra
 
 So back to the issue at hand, being the leading stray '-'. We could solve this 1 of 2 ways
 
-+ 1️⃣ capture the dash inside the ___$Pattern___, but also inside the ___$Pattern___, the characters that we really want to preserve now need to be inserted into a named capture group, so that they can be individually addressed without the whole *Pattern match*. Inside ___$With___, we replace '$0', with the named capture group 'disc', referenced as '${disc}':
++ 1️⃣ capture the dash inside the ___$Pattern___, but also inside the ___$Pattern___, the characters that we really want to preserve now need to be inserted into a named capture group, so that they can be individually addressed without the whole *Pattern match*. Inside ___$With___, we replace '\$0', with the named capture group 'disc', referenced as '${disc}':
 
-:radio_button: -Pattern '(?\<disc\>\d{2})-' -Anchor '\d{2}' -With '${_a}-${disc}' -WhatIf
+:radio_button: -Pattern '(?\<disc\>\d{2})-' -Anchor '\d{2}' -With '\${_a}-${disc}' -WhatIf
 
 > 09-02 Radio Stars.mp3
 
-+ 2️⃣ capture the dash inside the ___$Anchor___ and use the same technique for 1️⃣ above. This time, inside ___$With___, we replace ${_a}, with the named capture group 'track', referenced as '${track}':
++ 2️⃣ capture the dash inside the ___$Anchor___ and use the same technique for 1️⃣ above. This time, inside ___$With___, we replace \${_a}, with the named capture group 'track', referenced as '${track}':
 
-:radio_button: -Pattern '\d{2}' -Anchor '-(?\<track\>\d{2})' -With '${track}-$0' -WhatIf
+:radio_button: -Pattern '\d{2}' -Anchor '-(?\<track\>\d{2})' -With '${track}-\$0' -WhatIf
 
 > 09-02 Radio Stars.mp3
 
 Finally, we might decide that the \<TRACK-NO\>-\<DISC-NO\> sequence needs to be more clearly separated from the \<TRACK-NAME\>, so an extra ' - ' is inserted into ___$With___, let's say using technique 1️⃣ above (but equally applies to 2️⃣):
 
-:heavy_plus_sign: Rename-Many -Pattern '(?\<disc>\d{2})-' -Anchor '\d{2}' -With '${_a}-${disc} - ' -WhatIf
+:heavy_plus_sign: Rename-Many -Pattern '(?\<disc>\d{2})-' -Anchor '\d{2}' -With '\${_a}-${disc} - ' -WhatIf
 
 > 09-02 - Radio Stars.mp3
 
@@ -289,15 +371,15 @@ The 'Post (Spaces)' previously mentioned, indicates we have made a slight format
 
 So looking at our definition of ___$With___ again:
 
-> -With '${_a}-${disc} - '
+> -With '\${_a}-${disc} - '
 
 That space at the end is our issue. There is already a space preceding the \<TRACK-NAME\> which was not captured by either ___$Pattern___ or ___$Anchor___, so we don't need to insert another. So adjusting this to be
 
-> -With '${_a}-${disc} -'
+> -With '\${_a}-${disc} -'
 
 ... without the trailing space, fixes the problem:
 
-:heavy_plus_sign: Rename-Many -Pattern '(?\<disc\>\d{2})-' -Anchor '\d{2}' -With '${_a}-${disc} -' -Top 10 -WhatIf
+:heavy_plus_sign: Rename-Many -Pattern '(?\<disc\>\d{2})-' -Anchor '\d{2}' -With '\${_a}-${disc} -' -Top 10 -WhatIf
 
 ![picture](resources/images/bulk-rename.MOVE-TO-ANCHOR-FINAL.fixed-post-SPACES.jpg)
 
@@ -326,11 +408,11 @@ In this case, the ___$Pattern___ will match because there is still a 2 digit seq
 
 :warning: <a name = "using.formatters-must-use-single-quotes"></a> The ___$With___ format parameter MUST be defined with single quotes. Using double quotes causes string interpolation to occur resulting in named group references to not be evaluated as expected. Let's re-run the last command, but using double quotes for the ___$With___ parameter:
 
-:x: Rename-Many -Pattern '(?\<disc\>\d{2})-' -Anchor '\d{2}' -With "${_a}-${disc} -" -Top 10 -WhatIf
+:x: Rename-Many -Pattern '(?\<disc\>\d{2})-' -Anchor '\d{2}' -With "\${_a}-${disc} -" -Top 10 -WhatIf
 
 ![picture](resources/images/bulk-rename.MOVE-TO-ANCHOR-FINAL.interpolated-WITH.double-quotes.jpg)
 
-This shows that '${_a}' and '${disc}' are both evaluated to an empty string, breaking the desired result. The same applies to the [___$Paste___](#parameter-ref.paste) format parameter.
+This shows that '\${_a}' and '${disc}' are both evaluated to an empty string, breaking the desired result. The same applies to the [___$Paste___](#parameter-ref.paste) format parameter.
 
 The final point worthy of note is the 'Undo Rename' in the summary. By default, all executed commands are *undo-able* (assuming the undo feature has not been disabled). If we find that after running the command (assuming it has been unlocked and ___$WhatIf___ is not specified), the results are not as envisioned (shouldn't really happen, because the ___$WhatIf___ should always be used for new executions), the rename can be undone.
 
@@ -411,7 +493,7 @@ However, this is not our chosen solution. We want to insert a dash in between th
 
 Achieving this, requires more work than we completed in our initial attempt 2️⃣:
 
-:heavy_plus_sign: Rename-Many -Pattern '(?\<disc\>\d{2})-(?\<track\>\d{2})' -End -With ' (disc-${disc})' -Drop '${track} -' -WhatIf
+:heavy_plus_sign: Rename-Many -Pattern '(?\<disc\>\d{2})-(?\<track\>\d{2})' -End -With ' (disc-\${disc})' -Drop '${track} -' -WhatIf
 
 which results in:
 
@@ -512,7 +594,7 @@ The file list which was the subject of [Move To Hybrid](#using.move-to-hybrid-an
 
 This time, we want to update the dates in place, changing the format to be in US date format (mm-dd-yyyy)
 
-:heavy_plus_sign: Rename-Many -Pattern '\\(?(?\<d\>\d{2})-(?\<m\>\d{2})-(?\<y\>\d{4})\\)?' -Paste '[${m}-${d}-${y}]' -WhatIf
+:heavy_plus_sign: Rename-Many -Pattern '\\(?(?\<d\>\d{2})-(?\<m\>\d{2})-(?\<y\>\d{4})\\)?' -Paste '[\${m}-\${d}-\${y}]' -WhatIf
 
 ![picture](resources/images/bulk-rename.UPDATE-MATCH-FINAL.with-PASTE.jpg)
 
@@ -791,13 +873,13 @@ match. Works in concert with [___$Relation___](#parameter-ref.relation) (whereas
 
 When ___$Pattern___ contains named capture groups, these variables can also be referenced. Eg if the
 ___$Pattern___ is defined as '(?\<day>\d{1,2})-(?\<mon>\d{1,2})-(?\<year>\d{4})', then the variables
-${day}, ${mon} and ${year} also become available for use in ___$With___ or ___$Paste___.
+\${day}, \${mon} and \${year} also become available for use in ___$With___ or ___$Paste___.
 
 Typically, ___$With___ is literal text which is used to replace the ___$Pattern___ match and is inserted
 according to the anchor parameters and ___$Relation___. When using ___$With___, whatever is defined in the *anchor* match **IS** removed from the pipeline's name and requires the user to re-insert it with '${_a}' inside ___$With___
 if so required. The reason for this is that when ___$With___ is not present, the ___$Pattern___ match content is inserted verbatim next to the ___$Anchor___ either before or after. But if we use a ___$With___, then the user has full control over whereabouts the ___$Anchor___ is inserted inside ___$With___, so ___$Relation___ is redundant.
 
-## :radioactive: Troubleshooting / Common Errors
+## :radioactive: Troubleshooting / Common Errors<a name="troubleshooting"></a>
 
 Most issues that occur with using *Rename-Many* is as the result of not defining a regex pattern correctly. These clearly can only be fixed, by reviewing the pattern and adjusting accordingly.
 
@@ -807,9 +889,9 @@ It is advised that users always run with ___$WhatIf___ enabled for new invocatio
 + use PCRE compatible patterns. Eg, for named capture groups some regex engines use '(P?\<name\>)', this form will not work with Rename-Many, so make sure the correct syntax is being used in regex definitions.
 + mixing up ___$Paste___ with ___$With___. In the early stages of using *Rename-Many*, the user may accidentally use the wrong formatter parameter for the rename action being performed, usually resulting in PowerShell prompting for the wrong mandatory arguments or simply resulting in a terminating error. ___$With___ is used for *Move* operations and ___$Paste___ is used for static in-place updates.
 
-## :hammer: Expanding Rename-Many Capabilities
+## :hammer: Expanding Rename-Many Capabilities<a name = "expanding-rename-many"></a>
 
-### :mortar_board: Higher Order Commands<a name = "develop.higher-order-commands"></a>
+### :mortar_board: Higher Order Commands<a name = "higher-order-commands"></a>
 
 Provides the facility to reuse the base *Rename-Many* functionality to build higher level functionality. Since regular expressions are not particularly easy to specify without prior skill and knowledge, it might be advantageous to build a high level command that wraps the base functionality and has embedded within it a commonly used combination of parameters and regular expression definitions. This way the high level version can hide-away difficult to remember regular expressions that are used on a regular basis.
 
@@ -854,7 +936,7 @@ The other non UI elements:
 :pencil: **2) Define the arguments passed into 'Rename-Many'**
 
 + ___$Pattern___: '(?\<d>\d{2})-(?\<m>\d{2})-(?\<y>\d{4})'
-+ ___$Paste___: '(${y}-${m}-${d})'
++ ___$Paste___: '(\${y}-\${m}-\${d})'
 
 These arguments will be hardcoded into *Convert-Date*, so that the end user doesn't have to specify them.
 
@@ -921,7 +1003,7 @@ The user can use the higher order command *Convert-Date* with a simpler more spe
 
 Note, there is another way of complementing the functionality of existing commands that would apply in this scenario and that is with a *Proxy Command*. This is a slightly more involved process but contains some of the same techniques just discussed. It's out of the scope of this documentation, but [here](https://devblogs.microsoft.com/scripting/proxy-functions-spice-up-your-powershell-core-cmdlets/) is a blog post that describes how to apply this technique.
 
-### :robot: Using Transform<a name = "develop.transform"></a>
+### :robot: Using Transform<a name = "using.transform"></a>
 
 Another way to obtain custom functionality from *Rename-Many* is to provide a custom script-block for the *Transform* parameter. This will be illustrated with an example that replaces all '[' with '(' and all ')' with ']'. This might be useful to skirt round a widely encountered problem using the ___$Path___ parameter of mutating commands like *Rename-Item* which ascribes custom semantics to '[' and ']' in file system paths, causing un-expected results. (This can be averted using ___$LiteralPath___, but this is just an example to discuss using the *Transform* parameter.)
 
@@ -963,15 +1045,15 @@ This could be implemented as follows
 
 :heavy_multiplication_x: Rename-Many -Pattern '\\[[\w]+\\]' -Transform $transformer -WhatIf
 
-But, the *Transform* parameter is not meant to be used interactively (although it could be, but would be cumbersome). Rather, the intention is that the user would create a [*Higher Order Command*](#develop.higher-order-commands) so invoking this function interactively would become more convenient on the command line.
+But, the *Transform* parameter is not meant to be used interactively (although it could be, but would be cumbersome). Rather, the intention is that the user would create a [*Higher Order Command*](#higher-order-commands) so invoking this function interactively would become more convenient on the command line.
 
 :pushpin: In this example, the ___$Pattern___ becomes a filter, such that only items containing any word characters (\\w) inside square brackets are processed.
 
-## :green_salad: Recipes
+## :green_salad: Recipes<a name = "develop.recipes"></a>
 
-This section contains some examples that solve common renaming requirements. They are intended to give the reader a jump start in defining their own regular expressions and formatters to use with *Rename-Many*.
+This section *will* contain some examples that solve common renaming requirements. They are intended to give the reader a jump start in defining their own regular expressions and formatters to use with *Rename-Many*.
 
-## :hammer: Developer Notes
+## :hammer: Developer Notes<a name = "develop.notes"></a>
 
 This module has the following developer dependencies:
 
@@ -983,7 +1065,7 @@ This module has the following developer dependencies:
 
 After cloning the repo, change to the *Elizium.Bulk* directory from the root. You can look at the build script *Elizium.Bulk.build.ps1*, it will contain various tasks, the most important of which are explained below
 
-### Running build tasks
+### Running build tasks<a name = "develop.running-build-tasks"></a>
 
 To build the module and run the unit tests:
 
@@ -997,14 +1079,13 @@ To Run the unit tests only (assuming already built)
 
 > invoke-build tests
 
-To build the documents:
+To build external help:
 
-> invoke-build buildhelp
+> invoke-build buildHelp
 
-#### Problem rebuilding modified classes in the same PowerShell session
+#### Problem rebuilding modified classes in the same PowerShell session<a name = "develop.problem-rebuilding"></a>
 
-:warning: __Bulk__ make use of PowerShell classes. Because of the nature of classes in PowerShell, re-building edited code can cause errors. This is not a fault of the __Bulk__ code, it's just the way PowerShell classes have
-been designed.
+:warning: __Elizium.Bulk__ makes use of PowerShell classes. Because of the nature of classes in PowerShell, re-building edited code can cause errors. This is not a fault of the __Elizium.Bulk__ code, it's just the way PowerShell classes have been designed.
 
 What you will find is, if a class has been modified then rebuilt in the same session, you may find multiple class errors like so:
 
@@ -1012,14 +1093,14 @@ What you will find is, if a class has been modified then rebuilt in the same ses
 [-] EndAdapter.given: EndAdapter.should: get name 31ms (30ms|1ms)
  PSInvalidCastException: Cannot convert the "EndAdapter" value of type "EndAdapter" to type "EndAdapter".
  ArgumentTransformationMetadataException: Cannot convert the "EndAdapter" value of type "EndAdapter" to type "EndAdapter".
- at <ScriptBlock>, C:\Users\Plastikfan\dev\github\PoSh\Bulk\Elizium.Bulk\Tests\Rename-Many.tests.ps1:21
+ at <ScriptBlock>, ..\github\PoSh\Bulk\Elizium.Bulk\Tests\Rename-Many.tests.ps1:21
 ```
 
 Fear not, this is just reporting that the class definition has changed and because of this difference, one can't be substituted for another in the same PowerShell session (this is in contrast to the way functions work, where you can simply re-define a function in the same session and it will replace the previous definition. This luxury has not been afforded to classes unfortunately). All that's required is to restart a new session. The rebuild in the new session should progress without these errors.
 
 It is a bit onerous having to restart a session for every build, but below is a function that can be defined in the users powershell profile that when invoked, begins a restart loop. Now, when an exit is issued, the session is automatically restarted:
 
-#### Helper function restart-session
+#### Helper function restart-session<a name = "develop.restart-session"></a>
 
 Insert this into your PowerShell session file.
 
@@ -1085,6 +1166,6 @@ After restart, tag is restored and the restart message will indicate as such
 
 The user can set this flag in the environment (just set it to any non $null value).
 
-By default, $env:EliziumTest, will not be present, this means, that the unit tests in __Bulk__ will run in silent mode. However, there are some tests which are less valuable in silent mode, doing so would invalidate them to some degree. There are only a few of the tests in this category (tagged as 'Host') and it's because they require Write-Host to be invoked. Theoretically, one could mock out the Write-Host call, but some errors can be much easier to spot visually. This generally is not the best technique in unit-testing, but these test cases have been backed up by non noisy equivalents to make sure all bases are covered.
+By default, $env:EliziumTest, will not be present, this means, that the unit tests in __Elizium.Bulk__ will run in silent mode. However, there are some tests which are less valuable in silent mode, doing so would invalidate them to some degree. There are only a few of the tests in this category (tagged as 'Host') and it's because they require Write-Host to be invoked. Theoretically, one could mock out the Write-Host call, but some errors can be much easier to spot visually. This generally is not the best technique in unit-testing, but these test cases have been backed up by non noisy equivalents to make sure all bases are covered.
 
 During development, it is very useful to get a visual on how ui commands are behaving. This was the rationale behind the introduction of this flag. So when *EliziumTest* is defined, the user will see more output that reflects the execution of the Scribbler and Krayon.
