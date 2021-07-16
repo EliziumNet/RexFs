@@ -22,7 +22,7 @@ ___Bulk operations module with Bulk File/Directory renamer powered by [:nazar_am
   + [Escaping](#general.escaping)
   + [Filtering](#general.filtering)
   + [Formatter Parameters](#general.formatter-parameters)
-  + [General Parameters](#general.general-parameters)
+  + [General Parameters](#general.parameters)
   + [Post Processing](#general.post-processing)
   + [Signals](#general.signals)
   + [The Replacement Process](#general.the-replacement-process)
