@@ -13,28 +13,28 @@ ___Bulk operations module with Bulk File/Directory renamer powered by [:nazar_am
 ## Table Of Contents
 
 + [Introduction](#Introduction)
-+ [:rocket: Quick Start](#Quick-Start)
++ [:rocket: Quick Start](#quick-start)
   + [Quick Move](#Quick-Move)
   + [Quick Update](#Quick-Update)
 + [:sparkles: General Concepts](#general.concepts)
-  + [Safety features](#Safety-features)
-  + [Occurrence](#Occurrence)
-  + [Escaping](#Escaping)
-  + [Filtering](#Filtering)
-  + [Formatter Parameters](#Formatter-Parameters)
-  + [General Parameters](#General-Parameters)
-  + [Post Processing](#Post-Processing)
-  + [Signals](#Signals)
-  + [The Replacement Process](#The-Replacement-Process)
-  + [Saved Undo Scripts](#Saved-Undo-Scripts)
-+ [:sparkles: Move Match](#Move-Match)
-  + [Move to Anchor](#Move-to-Anchor)
-  + [Move to Start](#Move-to-Start)
-  + [Move to End](#Move-to-End)
-  + [Move to Hybrid Anchor](#Move-to-Hybrid-Anchor)
-+ [:sparkles: Update Match](#Update-Match)
-+ [:sparkles: Cut Match](#Cut-Match)
-+ [:sparkles: Add Appendage](#Add-Appendage)
+  + [Safety features](#general.safety-features)
+  + [Occurrence](#general.occurrence)
+  + [Escaping](#general.escaping)
+  + [Filtering](#general.filtering)
+  + [Formatter Parameters](#general.formatter-parameters)
+  + [General Parameters](#general.general-parameters)
+  + [Post Processing](#general.post-processing)
+  + [Signals](#general.signals)
+  + [The Replacement Process](#general.the-replacement-process)
+  + [Saved Undo Scripts](#general.saved-undo-scripts)
++ [:sparkles: Move Match](#action.move-match)
+  + [Move to Anchor](#using.move-to-anchor)
+  + [Move to Start](#using.move-to-start)
+  + [Move to End](#using.move-to-end)
+  + [Move to Hybrid Anchor](#using.move-to-hybrid-anchor)
++ [:sparkles: Update Match](#action.update-match)
++ [:sparkles: Cut Match](#action.cut-match)
++ [:sparkles: Add Appendage](#action.add-appendage)
   + [Add Prefix](#Add-Prefix)
   + [Add Suffix](#Add-Suffix)
 + [:sparkles: Parameter Reference](#parameter-reference)
@@ -42,8 +42,8 @@ ___Bulk operations module with Bulk File/Directory renamer powered by [:nazar_am
 + [:hammer: Expanding Rename-Many Capabilities](#expanding-rename-many)
   + [:mortar_board: Higher Order Commands](#higher-order-commands)
   + [:robot: Using Transform](#using.transform)
-+ [:green_salad: Recipes](#Recipes)
-+ [:hammer: Developer Notes](#Developer-Notes)
++ [:green_salad: Recipes](#develop.recipes)
++ [:hammer: Developer Notes](#develop.notes)
 
 ## Introduction
 
@@ -73,7 +73,7 @@ There are multiple modes of operation that *Rename-Many* runs in, which are *Upd
 | [Add Appendage](#action.add-appendage) | Add a fixed token to Start or End of item
 | [Transform](#using.transform)          | Apply a custom transform to perform rename
 
-## :rocket: Quick Start
+## :rocket: Quick Start<a name="quick-start"></a>
 
 *Rename-Many works* by receiving it's input from the pipeline and renaming these file system items according to parameters specified. The benefit of using this command comes when there is a need to rename multiple items according to the same criteria. This criteria amounts to specifying regular expressions. The 2 most commonly used scenarios are:
 
@@ -214,7 +214,7 @@ So given the following as an example (not all parameters have been defined so do
 
 we can see that inside the ___$With___ formatter, there are references to named group captures ('d', 'm', 'y') that are defined inside the ___$Pattern___ regex.
 
-### :gem: General Parameters<a name="general.general-parameters"></a>
+### :gem: General Parameters<a name="general.parameters"></a>
 
 The following parameters belong to all *Rename-Many* parameter sets:
 
