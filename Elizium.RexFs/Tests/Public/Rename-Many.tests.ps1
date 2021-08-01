@@ -277,7 +277,8 @@ Describe 'Rename-Many' -Tag 'remy' {
               param(
                 [string]$Original,
                 [string]$Renamed,
-                [string]$PatternCapture
+                [string]$PatternCapture,
+                [hashtable]$Exchange
               )
 
               return $("_{0}_" -f $Renamed);
@@ -367,21 +368,21 @@ Describe 'Rename-Many' -Tag 'remy' {
       Context 'and: First Only' {
         It 'should: do rename; replace First Pattern for Copy text' {
           $script:_expected = @{
-            'loopz.application.t1.log' = 'transformed.loopz.pplication.t1.log';
-            'loopz.application.t2.log' = 'transformed.loopz.pplication.t2.log';
-            'loopz.data.t1.txt'        = 'transformed.loopz.dta.t1.txt';
-            'loopz.data.t2.txt'        = 'transformed.loopz.dta.t2.txt';
-            'loopz.data.t3.txt'        = 'transformed.loopz.dta.t3.txt';
+            'loopz.application.t1.log' = 'transformed.loopz.application.t1.log';
+            'loopz.application.t2.log' = 'transformed.loopz.application.t2.log';
+            'loopz.data.t1.txt'        = 'transformed.loopz.data.t1.txt';
+            'loopz.data.t2.txt'        = 'transformed.loopz.data.t2.txt';
+            'loopz.data.t3.txt'        = 'transformed.loopz.data.t3.txt';
           }
 
           [scriptblock]$transformer = [scriptblock] {
-            param($name, $newItemName, $capturedPattern, $exchange)
+            param($name, $capturedPattern, $exchange)
 
-            return "transformed.$newItemName";
+            return "transformed.$($name)";
           }
 
           Get-ChildItem -Path $_directoryPath | Rename-Many -File `
-            -Pattern 'a', f -Transform $transformer `
+            -Transform $transformer `
             -WhatIf:$_whatIf -Test:$_test;
         }
       } # and: First Only
@@ -1248,7 +1249,7 @@ Describe 'Rename-Many parameter sets' -Tag 'remy' {
 
         # Transformer
         #
-        @{ Parameters = 'underscore', 'Pattern', 'Transform';
+        @{ Parameters = 'underscore', 'Transform';
           ParamSet    = 'Transformer'
         }
       ) {
