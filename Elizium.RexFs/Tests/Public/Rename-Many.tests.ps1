@@ -262,33 +262,6 @@ Describe 'Rename-Many' -Tag 'remy' {
             }
           } # and: Last Only
         } # and: First Only
-
-        Context 'and: Transform' {
-          It 'should: transform Rename' {
-            $script:_expected = @{
-              'loopz.application.t1.log' = '_loopz.@pplication.t1_.log';
-              'loopz.application.t2.log' = '_loopz.@pplication.t2_.log';
-              'loopz.data.t1.txt'        = '_loopz.d@ta.t1_.txt';
-              'loopz.data.t2.txt'        = '_loopz.d@ta.t2_.txt';
-              'loopz.data.t3.txt'        = '_loopz.d@ta.t3_.txt';
-            }
-
-            [scriptblock]$transform = [scriptblock] {
-              param(
-                [string]$Original,
-                [string]$Renamed,
-                [string]$PatternCapture,
-                [hashtable]$Exchange
-              )
-
-              return $("_{0}_" -f $Renamed);
-            }
-
-            Get-ChildItem -Path $_directoryPath | Rename-Many -File `
-              -Pattern 'a', f -Paste '@' -Transform $transform `
-              -WhatIf:$_whatIf -Test:$_test;
-          }
-        }
       } # With
 
       Context 'and: Except' {
@@ -363,31 +336,45 @@ Describe 'Rename-Many' -Tag 'remy' {
         }
       }
     } # and: Source matches Pattern
-
-    Context 'and: Transform' {
-      Context 'and: First Only' {
-        It 'should: do rename; replace First Pattern for Copy text' {
-          $script:_expected = @{
-            'loopz.application.t1.log' = 'transformed.loopz.application.t1.log';
-            'loopz.application.t2.log' = 'transformed.loopz.application.t2.log';
-            'loopz.data.t1.txt'        = 'transformed.loopz.data.t1.txt';
-            'loopz.data.t2.txt'        = 'transformed.loopz.data.t2.txt';
-            'loopz.data.t3.txt'        = 'transformed.loopz.data.t3.txt';
-          }
-
-          [scriptblock]$transformer = [scriptblock] {
-            param($name, $capturedPattern, $exchange)
-
-            return "transformed.$($name)";
-          }
-
-          Get-ChildItem -Path $_directoryPath | Rename-Many -File `
-            -Transform $transformer `
-            -WhatIf:$_whatIf -Test:$_test;
-        }
-      } # and: First Only
-    }
   } # UpdateInPlace
+
+  Context 'given: Transform' {
+    Context 'and: Transform returns non empty result' {
+      It 'should: perform custom transform successfully' {
+        $script:_expected = @{
+          'loopz.application.t1.log' = 'transformed.loopz.application.t1.log';
+          'loopz.application.t2.log' = 'transformed.loopz.application.t2.log';
+          'loopz.data.t1.txt'        = 'transformed.loopz.data.t1.txt';
+          'loopz.data.t2.txt'        = 'transformed.loopz.data.t2.txt';
+          'loopz.data.t3.txt'        = 'transformed.loopz.data.t3.txt';
+        }
+
+        [scriptblock]$transformer = [scriptblock] {
+          param($name, $exchange)
+
+          return "transformed.$($name)";
+        }
+
+        Get-ChildItem -Path $_directoryPath | Rename-Many -File `
+          -Transform $transformer `
+          -WhatIf:$_whatIf -Test:$_test;
+      }
+    }
+
+    Context 'and: Transform returns empty return' {
+      It 'should: NOT perform rename' {
+        [scriptblock]$transformer = [scriptblock] {
+          param($name, $exchange)
+
+          return [string]::Empty;
+        }
+
+        Get-ChildItem -Path $_directoryPath | Rename-Many -File `
+          -Transform $transformer `
+          -WhatIf:$_whatIf -Test:$_test;
+      }
+    }
+  } # Transform
 
   Context 'given: MoveToAnchor' {
     Context 'and: TargetType is Anchor' {
@@ -516,36 +503,6 @@ Describe 'Rename-Many' -Tag 'remy' {
             }
           }
         } # and: Source matches Pattern
-
-        Context 'and: Transform' {
-          # Transform only allowed with InPlace not move with Anchor
-          # Transform only compatible with Regex parameters not formatter/output parameters,
-          # so we can specify Pattern, Cut, Copy, not not With/Paste/Anchor/Start/End/Relation
-          #
-          It 'should: transform Rename' -Tag 'INVALID' -Skip {
-            $script:_expected = @{
-              'loopz.application.t1.log' = '_applicloopz.ation.t1_.log';
-              'loopz.application.t2.log' = '_applicloopz.ation.t2_.log';
-              'loopz.data.t1.txt'        = '_datloopz.a.t1_.txt';
-              'loopz.data.t2.txt'        = '_datloopz.a.t2_.txt';
-              'loopz.data.t3.txt'        = '_datloopz.a.t3_.txt';
-            }
-
-            [scriptblock]$transform = [scriptblock] {
-              param(
-                [string]$Original,
-                [string]$Renamed,
-                [string]$PatternCapture
-              )
-
-              return $("_{0}_" -f $Renamed);
-            }
-
-            Get-ChildItem -File -Path $_directoryPath | Rename-Many -File `
-              -Pattern 'loopz.' -Transform $transform `
-              -WhatIf:$_whatIf -Test:$_test;
-          }
-        }
       } # and Relation is Before
 
       Context 'and Relation is After' {
