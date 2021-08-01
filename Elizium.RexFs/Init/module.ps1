@@ -9,3 +9,8 @@
 Register-CommandSignals -Alias 'remy' -UsedSet $remySignals -Silent;
 
 New-Variable -Name Remy_EXS -Value 'REXFS.REMY' -Scope Script -Option ReadOnly -Force;
+
+New-Variable -Name EmptyActionResult -Scope Script -Option ReadOnly -Force -Value $([PSCustomObject]@{
+    FailedReason = 'Empty action result';
+    Success      = $false;
+  });

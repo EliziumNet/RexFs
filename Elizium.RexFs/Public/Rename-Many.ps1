@@ -707,9 +707,16 @@ function Rename-Many {
       [string]$errorReason = [string]::Empty;
 
       try {
-        [PSCustomObject]$actionResult = & $action @actionParameters;
-        [string]$newItemName = $actionResult.Payload;
+        [PSCustomObject]$actionResult = convert-ActionResult -Result $(& $action @actionParameters);
+        [string]$newItemName = $actionResult.Success ? $actionResult.Payload : $_underscore.Name;
 
+        if ($actionResult.Success) {
+          [string]$newItemName = $actionResult.Payload;
+        }
+        else {
+          [string]$newItemName = $_underscore.Name;
+          $errorReason = $actionResult.FailedReason;
+        }
       }
       catch {
         [string]$newItemName = $_underscore.Name;
