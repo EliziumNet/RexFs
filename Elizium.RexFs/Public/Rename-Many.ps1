@@ -218,12 +218,12 @@ function Rename-Many {
   are not breached and the transform does not have to worry about breaking them. The transform
   function's signature is as follows:
 
-  * Original: original item's name
-  * Renamed: new name
-  * CapturedPattern: pattern capture
+  * Exchange
+  * Value: original item's name
 
-  and should return the new name. If the transform does not change the name, it should return
-  an empty string.
+  and should return a PSCustomObject, with a Payload member set to the new name and a Success
+  boolean member. If failed for whatever reason, there should be FailedReason string member
+  instead of the Payload.
 
   .PARAMETER Whole
     Provides an alternative way to indicate that the regular expression parameters
@@ -383,7 +383,6 @@ function Rename-Many {
     [Parameter(ParameterSetName = 'UpdateInPlace', Mandatory, Position = 1)]
     [Parameter(ParameterSetName = 'MoveToStart', Mandatory, Position = 1)]
     [Parameter(ParameterSetName = 'MoveToEnd', Mandatory, Position = 1)]
-    [Parameter(ParameterSetName = 'Transformer', Mandatory, Position = 1)]
     [ValidateScript( { { $(test-ValidPatternArrayParam -Arg $_ -AllowWildCard ) } })]
     [Alias('p')]
     [array]$Pattern,
@@ -575,8 +574,6 @@ function Rename-Many {
           'Value' = $adjustedName;
         }
 
-        # Pattern is present for all actions except Cut
-        #
         if ($exchange.ContainsKey("$($Remy_EXS).PATTERN-REGEX")) {
           $_params['Pattern'] = $exchange["$($Remy_EXS).PATTERN-REGEX"];
 
@@ -588,6 +585,9 @@ function Rename-Many {
 
           $_params['CutOccurrence'] = $exchange.ContainsKey("$($Remy_EXS).CUT-OCC") `
             ? $exchange["$($Remy_EXS).CUT-OCC"] : 'f';
+        }
+        elseif ($exchange.ContainsKey("$($Remy_EXS).TRANSFORM")) {
+          $_params['Exchange'] = $exchange;
         }
 
         if ($action -eq 'Move-Match') {
@@ -670,33 +670,6 @@ function Rename-Many {
       return $actionParameters;
     } # use-actionParams
 
-    function invoke-HandleError {
-      param(
-        [Parameter()]
-        [string]$message,
-
-        [Parameter()]
-        [string]$prefix,
-
-        [Parameter()]
-        [string]$reThrowIfMatch = $pesterAssertionFailure
-      )
-
-      [string]$errorReason = $(
-        "$prefix`: " +
-        ($message -split '\n')[0]
-      );
-      # We need Pester to throw pester specific errors. In the lack of, we have to
-      # guess that its a Pester assertion failure and let the exception through so
-      # the test fails.
-      #
-      if ($errorReason -match $reThrowIfMatch) {
-        throw $_;
-      }
-
-      return $errorReason;
-    }
-
     [scriptblock]$doRenameFsItems = {
       [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '')]
       param(
@@ -741,33 +714,6 @@ function Rename-Many {
       catch {
         [string]$newItemName = $_underscore.Name;
         $errorReason = invoke-HandleError -message $_.Exception.Message -prefix 'Action';
-
-        [PSCustomObject]$actionResult = [PSCustomObject]@{
-          FailedReason = $errorReason;
-          Success      = $false;
-        }
-      }
-
-      try {
-        if ([string]::IsNullOrEmpty($errorReason) -and $_exchange.ContainsKey("$($Remy_EXS).TRANSFORM")) {
-          [scriptblock]$transform = $_exchange["$($Remy_EXS).TRANSFORM"];
-
-          if ($transform) {
-            [string]$transformed = $transform.InvokeReturnAsIs(
-              [System.IO.Path]::GetFileNameWithoutExtension($_underscore.Name),
-              $newItemName,
-              $actionResult.CapturedPattern,
-              $_exchange
-            );
-
-            if (-not([string]::IsNullOrEmpty($transformed))) {
-              $newItemName = $transformed;
-            }
-          }
-        }
-      }
-      catch {
-        $errorReason = invoke-HandleError -message $_.Exception.Message -prefix 'Transform';
 
         [PSCustomObject]$actionResult = [PSCustomObject]@{
           FailedReason = $errorReason;
@@ -959,8 +905,6 @@ function Rename-Many {
       $result.GetType() -in @([System.IO.FileInfo], [System.IO.DirectoryInfo]) ? $result.Name : $result;
     }
 
-    [string]$pesterAssertionFailure = 'Expected strings to be the same, but they were different';
-
     [System.IO.FileSystemInfo[]]$collection = @();
 
     [Krayon]$_krayon = Get-Krayon
@@ -1022,12 +966,12 @@ function Rename-Many {
       'LOOPZ.SUMMARY-BLOCK.LINE'              = $LoopzUI.EqualsLine;
       'LOOPZ.SUMMARY-BLOCK.MESSAGE'           = $summaryMessage;
 
-      "$($Remy_EXS).CONTEXT"                   = $Context;
-      "$($Remy_EXS).MAX-ITEM-MESSAGE-SIZE"     = $maxItemMessageSize;
-      "$($Remy_EXS).FIXED-INDENT"              = get-fixedIndent -Theme $theme;
-      "$($Remy_EXS).FROM-LABEL"                = Get-PaddedLabel -Label 'From' -Width 9;
+      "$($Remy_EXS).CONTEXT"                  = $Context;
+      "$($Remy_EXS).MAX-ITEM-MESSAGE-SIZE"    = $maxItemMessageSize;
+      "$($Remy_EXS).FIXED-INDENT"             = get-fixedIndent -Theme $theme;
+      "$($Remy_EXS).FROM-LABEL"               = Get-PaddedLabel -Label 'From' -Width 9;
 
-      "$($Remy_EXS).USER-PARAMS"               = $PSBoundParameters;
+      "$($Remy_EXS).USER-PARAMS"              = $PSBoundParameters;
     }
 
     [string]$adjustedWhole = if ($PSBoundParameters.ContainsKey('Whole')) {
@@ -1328,6 +1272,7 @@ function Rename-Many {
       Force       = 'Wide';
       Keys        = @{
         "$($Remy_EXS).TRANSFORM" = $Transform;
+        "$($Remy_EXS).ACTION"    = 'Invoke-Transform';
       }
     }
     $bootStrap.Register($transformSpec);
@@ -1424,7 +1369,8 @@ function Rename-Many {
         [boolean]$result = $(-not($Relations.Contains('IsMove')) -and `
             -not($Entities.Contains('Append')) -and `
             -not($Entities.Contains('Prepend')) -and `
-            -not($Entities.Contains('Cut'))
+            -not($Entities.Contains('Cut')) -and `
+            -not($Entities.Contains('Transform'))
         );
         return $result;
       }
