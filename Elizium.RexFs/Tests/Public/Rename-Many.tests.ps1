@@ -1024,7 +1024,7 @@ Describe 'Rename-Many' -Tag 'remy' {
   } # given: invalid Anchor expression
 } # Rename-Many
 
-Describe 'Rename-Many (Internal)' {
+Describe 'Rename-Many (Internal)' -Skip {
   BeforeAll {
     InModuleScope Elizium.RexFs { 
       Get-Module Elizium.RexFs | Remove-Module -Force;
@@ -1032,6 +1032,10 @@ Describe 'Rename-Many (Internal)' {
         -ErrorAction 'stop' -DisableNameChecking -Force;
 
       Import-Module Assert;
+
+      Mock -ModuleName Elizium.RexFs Get-IsLocked {
+        return $true;
+      }
 
       Mock -ModuleName Elizium.RexFs rename-FsItem {
         param(
@@ -1041,20 +1045,16 @@ Describe 'Rename-Many (Internal)' {
         )
         return $To;
       }
-
-      Mock -ModuleName Elizium.RexFs Get-IsLocked {
-        return $true;
-      }
     }
   }
 
   Context 'and: Host does not support emojis' {
-    It 'should: render with non unicode signals' -Skip -Tag 'REWRITE' {
+    It 'should: render with non unicode signals' -Tag 'REWRITE' {
       Mock -ModuleName Elizium.RexFs Test-HostSupportsEmojis {
         return $false;
       }
       InModuleScope Elizium.RexFs {
-        $Loopz.Signals = $(Initialize-Signals);
+        # $Loopz.Signals = $(Initialize-Signals);
         [string]$directoryPath = './Tests/Data/actium/';
 
         [string]$copy = '(?<header>[\w]+)\.(?<mid>[\w]+).(?<tail>[\w]+)';
