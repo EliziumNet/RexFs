@@ -546,9 +546,9 @@ function Rename-Many {
         [Parameter(Mandatory)]
         $endAdapter
       )
-      [string]$action = $_exchange["$($Remy_EXS).ACTION"];
-      [boolean]$diagnose = ($_exchange.ContainsKey('LOOPZ.DIAGNOSE') -and
-        $_exchange['LOOPZ.DIAGNOSE']);
+      [string]$action = $exchange["$($Remy_EXS).ACTION"];
+      [boolean]$diagnose = ($exchange.ContainsKey('LOOPZ.DIAGNOSE') -and
+        $exchange['LOOPZ.DIAGNOSE']);
       [string]$adjustedName = $endAdapter.GetAdjustedName();
 
       # To do, make the action applicable in all modes
@@ -754,9 +754,15 @@ function Rename-Many {
         try {
           $product = rename-FsItem -From $_underscore -To $newItemName -WhatIf:$whatIf -UndoOperant $operant;
 
-          [UndoRename]$operant = $_exchange.ContainsKey("$($Remy_EXS).UNDO") `
-            ? $_exchange["$($Remy_EXS).UNDO"] : $null;
-          $trigger = $true;
+          if ($null -ne $product) {
+            [UndoRename]$operant = $_exchange.ContainsKey("$($Remy_EXS).UNDO") `
+              ? $_exchange["$($Remy_EXS).UNDO"] : $null;
+            $trigger = $true;
+          }
+          else {
+            $product = $newItemName;
+            $errorReason = 'Failed (Possible Access Denied)';
+          }
         }
         catch {
           $product = $newItemName;

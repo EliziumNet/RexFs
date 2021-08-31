@@ -19,37 +19,32 @@ function rename-FsItem {
   [string]$destinationPath = Join-Path -Path $parentPath -ChildPath $To;
 
   if (-not($PSBoundParameters.ContainsKey('WhatIf') -and $PSBoundParameters['WhatIf'])) {
-    try {
-      [boolean]$differByCaseOnly = $From.Name.ToLower() -eq $To.ToLower();
+    [boolean]$differByCaseOnly = $From.Name.ToLower() -eq $To.ToLower();
 
-      if ($differByCaseOnly) {
-        # Just doing a double rename to get around the problem of not being able to rename
-        # an item unless the case is different
-        #
-        [string]$tempName = $From.Name + "_";
+    if ($differByCaseOnly) {
+      # Just doing a double rename to get around the problem of not being able to rename
+      # an item unless the case is different
+      #
+      [string]$tempName = $From.Name + "_";
 
-        Rename-Item -LiteralPath $From.FullName -NewName $tempName -PassThru | `
-          Rename-Item -NewName $To;
-      }
-      else {
-        Rename-Item -LiteralPath $From.FullName -NewName $To;
-      }
-
-      if ($UndoOperant) {
-        [PSCustomObject]$operation = [PSCustomObject]@{
-          Directory = $parentPath;
-          From      = $From.Name;
-          To        = $To;
-        }
-        Write-Debug "rename-FsItem (Undo Rename) => alert: From: '$($operation.From.Name)', To: '$($operation.To)'";
-        $UndoOperant.alert($operation);
-      }
-
-      $result = Get-Item -LiteralPath $destinationPath;
+      Rename-Item -LiteralPath $From.FullName -NewName $tempName -PassThru | `
+        Rename-Item -NewName $To;
     }
-    catch [System.IO.IOException] {
-      $result = $null;
+    else {
+      Rename-Item -LiteralPath $From.FullName -NewName $To;
     }
+
+    if ($UndoOperant) {
+      [PSCustomObject]$operation = [PSCustomObject]@{
+        Directory = $parentPath;
+        From      = $From.Name;
+        To        = $To;
+      }
+      Write-Debug "rename-FsItem (Undo Rename) => alert: From: '$($operation.From.Name)', To: '$($operation.To)'";
+      $UndoOperant.alert($operation);
+    }
+
+    $result = Get-Item -LiteralPath $destinationPath;
   }
   else {
     $result = $To;
