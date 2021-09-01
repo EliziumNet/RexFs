@@ -755,7 +755,8 @@ function Rename-Many {
           $product = rename-FsItem -From $_underscore -To $newItemName -WhatIf:$whatIf -UndoOperant $operant;
 
           if ($null -ne $product) {
-            [UndoRename]$operant = $_exchange.ContainsKey("$($Remy_EXS).UNDO") `
+            # [UndoRename]
+            [object]$operant = $_exchange.ContainsKey("$($Remy_EXS).UNDO") `
               ? $_exchange["$($Remy_EXS).UNDO"] : $null;
             $trigger = $true;
           }
@@ -1299,7 +1300,10 @@ function Rename-Many {
       BaseFilename  = 'undo-rename';
       DisabledEnVar = $Context.UndoDisabledEnVar;
     }
-    [UndoRename]$operant = Initialize-ShellOperant -Options $operantOptions -DryRun:$whatIf;
+    # ref: https://stackoverflow.com/questions/36804102/powershell-5-and-classes-cannot-convert-the-x-value-of-type-x-to-type-x#36812564
+    # Argh, for some reason strong typing is breaking here:
+    # [UndoRename]
+    [object]$operant = Initialize-ShellOperant -Options $operantOptions -DryRun:$whatIf;
 
     [PSCustomObject]$undoSpec = [PSCustomObject]@{
       Activate    = $true;

@@ -7,7 +7,7 @@ Describe 'convert-ActionResult' {
   }
 
   Context 'given: <Scenario> <Result>' {
-    It 'should: return result with Success = <ExpectedSuccess>' -Tag 'Current' -TestCases @(
+    It 'should: return result with Success = <ExpectedSuccess>' -TestCases @(
       # string results
       #
       @{
