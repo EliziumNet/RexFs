@@ -8,9 +8,10 @@ function rename-FsItem {
     [Parameter()]
     [string]$To,
 
+    # [UndoRename]
     [Parameter()]
     [AllowNull()]
-    [UndoRename]$UndoOperant
+    [object]$UndoOperant
   )
   [boolean]$itemIsDirectory = ($From.Attributes -band
     [System.IO.FileAttributes]::Directory) -eq [System.IO.FileAttributes]::Directory;

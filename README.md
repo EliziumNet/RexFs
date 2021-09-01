@@ -54,7 +54,6 @@ The module can be installed using the standard **install-module** command:
 
 The following dependencies will be installed automatically
 
-+ [:mortar_board: __Elizium.Klassy__](https://github.com/EliziumNet/Klassy)
 + [:rainbow: __Elizium.Krayola__](https://github.com/EliziumNet/Krayola)
 + [:nazar_amulet: __Elizium.Loopz__](https://github.com/EliziumNet/Loopz)
 

@@ -3,11 +3,11 @@ using namespace System.Collections;
 using namespace System.IO;
 using namespace System.Text;
 using module Elizium.Krayola;
-using module Elizium.Klassy;
 using module Elizium.Loopz;
 
 Describe 'Rename-Many' -Tag 'remy' {
   BeforeAll {
+
     Get-Module Elizium.RexFs | Remove-Module -Force;
     Import-Module .\Output\Elizium.RexFs\Elizium.RexFs.psm1 `
       -ErrorAction 'stop' -DisableNameChecking -Force
@@ -22,9 +22,8 @@ Describe 'Rename-Many' -Tag 'remy' {
       param(
         [FileSystemInfo]$From,
         [string]$To,
-        [UndoRename]$UndoOperant
+        [object]$UndoOperant
       )
-
       #
       # This mock result works only because the actual returned FileSystemInfo returned
       # does not drive any control logic.
@@ -66,12 +65,13 @@ Describe 'Rename-Many' -Tag 'remy' {
       'loopz.data.t2.txt'        = 't2.loopz.data.txt';
       'loopz.data.t3.txt'        = 't3.loopz.data.txt';
     }
-
-    $script:_noFiles = @{}
-  }
+  } # BeforeAll
 
   BeforeEach {
-    $script:_expected = $null;
+    InModuleScope Elizium.RexFs {
+      $script:_expected = $null;
+      $script:_noFiles = @{}
+    }
   }
 
   Context 'given: UpdateInPlace' {
@@ -85,27 +85,31 @@ Describe 'Rename-Many' -Tag 'remy' {
 
         Context 'Copy does NOT match' {
           It 'should: do rename; replace First Pattern for Copy text' {
-            $script:_expected = $_noFiles;
+            InModuleScope Elizium.RexFs {
+              $script:_expected = $script:_noFiles;
 
-            Get-ChildItem -Path $_directoryPath | Rename-Many -File `
-              -Pattern 'a', f -Copy 'bar' -Paste '${_c}' `
-              -WhatIf:$_whatIf -Test:$_test;
+              Get-ChildItem -Path $_directoryPath | Rename-Many -File `
+                -Pattern 'a', f -Copy 'bar' -Paste '${_c}' `
+                -WhatIf:$_whatIf -Test:$_test;
+            }
           }
         }
 
         Context 'and: First Only' {
-          It 'should: do rename; replace First Pattern for Copy text' {
-            $script:_expected = @{
-              'loopz.application.t1.log' = 'loopz.tpplication.t1.log';
-              'loopz.application.t2.log' = 'loopz.tpplication.t2.log';
-              'loopz.data.t1.txt'        = 'loopz.dtta.t1.txt';
-              'loopz.data.t2.txt'        = 'loopz.dtta.t2.txt';
-              'loopz.data.t3.txt'        = 'loopz.dtta.t3.txt';
-            }
+          It 'should: do rename; replace First Pattern for Copy text' -Tag 'Current' {
+            InModuleScope Elizium.RexFs {
+              $script:_expected = @{
+                'loopz.application.t1.log' = 'loopz.tpplication.t1.log';
+                'loopz.application.t2.log' = 'loopz.tpplication.t2.log';
+                'loopz.data.t1.txt'        = 'loopz.dtta.t1.txt';
+                'loopz.data.t2.txt'        = 'loopz.dtta.t2.txt';
+                'loopz.data.t3.txt'        = 'loopz.dtta.t3.txt';
+              }
 
-            Get-ChildItem -Path $_directoryPath | Rename-Many -File `
-              -Pattern 'a', f -Copy 't' -Paste '${_c}' `
-              -WhatIf:$_whatIf -Test:$_test;
+              Get-ChildItem -Path $_directoryPath | Rename-Many -File `
+                -Pattern 'a', f -Copy 't' -Paste '${_c}' `
+                -WhatIf:$_whatIf -Test:$_test;
+            }
           }
         } # and: First Only
 
