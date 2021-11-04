@@ -1303,7 +1303,7 @@ function Rename-Many {
     # ref: https://stackoverflow.com/questions/36804102/powershell-5-and-classes-cannot-convert-the-x-value-of-type-x-to-type-x#36812564
     # Argh, for some reason strong typing is breaking here:
     # [UndoRename]
-    [object]$operant = Initialize-ShellOperant -Options $operantOptions -DryRun:$whatIf;
+    [object]$operant = Initialize-ShellOperant -Options $operantOptions;
 
     [PSCustomObject]$undoSpec = [PSCustomObject]@{
       Activate    = $true;

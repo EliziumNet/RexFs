@@ -51,7 +51,19 @@
   # ProcessorArchitecture = ''
 
   # Modules that must be imported into the global environment prior to importing this module
-  # RequiredModules = @()
+  RequiredModules   = @(
+    @{
+      ModuleName    = 'Elizium.Krayola';
+      ModuleVersion = '3.0.0';
+      Guid          = 'cc13fedc-6dea-4573-b600-d26c9f77e6ac';
+    },
+    @{
+      ModuleName    = 'Elizium.Loopz';
+      ModuleVersion = '4.0.0';
+      Guid          = '24ca8299-5c0d-479c-b5eb-c99dba2dc398';
+    }
+  )
+
 
   # Assemblies that must be loaded prior to importing this module
   # RequiredAssemblies = @()
