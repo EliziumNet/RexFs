@@ -30,7 +30,7 @@
   Copyright         = '(c) Plastikfan. All rights reserved.'
 
   # Description of the functionality provided by this module
-  # Description = ''
+  Description       = 'Regular expression based Bulk File/Directory renamer'
 
   # Minimum version of the PowerShell engine required by this module
   PowerShellVersion = '7.0'
