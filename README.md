@@ -131,12 +131,14 @@ Continuing with our log files theme, let's say we just want to adjust the date f
 
 Hopefully, the above examples have given a quick insight in the operation of the command, enough to get started with. Also note, to begin with, you can initially stick to using static patterns instead of more complex regex sequences for the more simple rename operations, eg rename the presence of the word 'CCY' to 'Currency', by using a pattern of 'CCY' and ___-With___/___-Paste___ of 'Currency'.
 
+:warning: An important point of note that the user must take heed of early on is, all _formatter_ parameters ([___-Drop___](#parameter-ref.drop), [___-Paste___](#parameter-ref.paste) and [___-With___](#parameter-ref.with)), ___MUST___ be specified with single quotes not double quotes (see [Formatter parameters must use single quotes](#using.formatters-must-use-single-quotes) for more details).
+
 ## :sparkles: General Concepts<a name="general.concepts"></a>
 
 ### :gem: Safety features<a name="general.safety-features"></a>
 
 *Rename-Many* is a powerful command and should be used with caution. Because of the
-potential of accidental misuse, a number of protections have been put in place:
+potential for accidental misuse, a number of protections have been put in place:
 
 + By default, the command is locked. This means that the command will not actually
 perform any renames until it has been unlocked by the user. When locked, the command
@@ -200,7 +202,7 @@ escaping.
 
 ### :gem: Filtering<a name="general.filtering"></a>
 
-Generally, the user must indicate which items are to be renamed using the pipeline. Any command can be used to select file system items (directories or files), but typically *Get-ChildItem* would be used and the result then piped to Rename-Many. *Get-ChildItem* contains a ___-Filter___ parameter but this can only filter as a blob using wildcards where appropriate, but can not filter by a regular expression. The user could use an extra pipeline stage using Where-Object eg:
+Generally, the user must indicate which items are to be renamed using the pipeline. Any command can be used to select file system items (directories or files), but typically *Get-ChildItem* would be used and the result piped to Rename-Many. *Get-ChildItem* contains a ___-Filter___ parameter but this can only filter as a blob using wildcards where appropriate, but can not filter by a regular expression. The user could use an extra pipeline stage using Where-Object eg:
 
 > Get-ChildItem -LiteralPath ./ -File -Filter '*.log' | Where-Object { $_.Name -match 'bar' } | Rename-Many ...
 
@@ -262,12 +264,11 @@ For *Trim* and *Spaces*, the post processing simply involves removal of the unwa
 
 > ${some-variable}
 
-which occurs as a result of a named group reference defined in a formatter parameter (___-With___/___-Paste___) not being populated as a result of applying a regex parameter to the item and it not matching. An example of this occurring is with the use of a [Hybrid Anchor](#using.move-to-hybrid-anchor) (___-AnchorStart___/___-AnchorEnd___), where the user specifies a pattern that includes a named group capture, but for some items, this match may fail (so by design, the match would fall back to being moved to start or end), but the formatter parameter ___-With___ contains a reference to that named capture group. When this match fails, the reference '${some-variable}' still remains, which is removed by the post processing operation.
+which occurs as a result of a named group reference defined in a formatter parameter (___-With___/___-Paste___) not being populated due to application of a regex parameter to the item and it not matching. An example of this occurring is with the use of a [Hybrid Anchor](#using.move-to-hybrid-anchor) (___-AnchorStart___/___-AnchorEnd___), where the user specifies a pattern that includes a named group capture, but for some items, this match may fail (so by design, the match would fall back to being moved to start or end), but the formatter parameter ___-With___ contains a reference to that named capture group. When this match fails, the reference '${some-variable}' still remains, which is removed by the post processing operation.
 
-The *Dashes* rule ensures that we never allow a poor dash formation to occur, something like '- -' which can typically occur if a pattern is designed to work on item names that are denoted by fields split by dashes and an operation moves a field from 1 location to another leaving behind unsightly dash/space sequences. These are normalised away be replacing with a tidy ' - '.
+The *Dashes* rule ensures that we never allow a poor dash formation to occur, something like '- -' which can typically occur if a pattern is designed to work on item names that are denoted by fields split by dashes and an operation moves a field from 1 location to another leaving behind unsightly dash/space sequences. These are normalised away by replacing with a tidy single ' - '.
 
-These post-processing operations are made explicit in the ui because **sometimes** they occur as a result of
-a mal-formed regular expression that can be automatically fixed, but doing so may lure the user into thinking they're specifying the regex pattern correctly when in fact a minor correctable mistake has been made. It is best to be explicit about such issues rather than fix them silently.
+These post-processing operations are made explicit in the UI because **sometimes** they occur as a result of a mal-formed regular expression that can be automatically fixed, but doing so may lure the user into thinking they're specifying the regex pattern correctly when in fact a minor correctable mistake has been made. The command aims to be explicit about such issues rather than fix them silently.
 
 The following shows an example of the *MissingCapture* operation being applied and how it shows up in the output:
 
@@ -299,7 +300,7 @@ It is to this remainder that all other regex parameters are applied.
 
 The undo facility enables a rename batch to be reversed. The location of the scripts is displayed in the rename summary. By default, scripts are saved to '.elizium' under the home (___$Home___) directory, but this can be overridden.
 
-To change this path, the user should define either an absolute or relative path in the environment variable '*LOOPZ_PATH*'. Relative paths are relative to the $Home directory.
+To change this path, the user should define either an absolute or relative path in the environment variable '*ELIZIUM_PATH*'. Relative paths are relative to the $Home directory.
 
 ## :sparkles: Move Match<a name="action.move-match"></a>
 
@@ -423,13 +424,13 @@ In this case, the ___-Pattern___ will match because there is still a 2 digit seq
 
 ![picture](resources/images/rename-many.MOVE-TO-ANCHOR-FINAL.not-renamed-BECAUSE.jpg)
 
-:warning: <a name = "using.formatters-must-use-single-quotes"></a> The ___-With___ format parameter MUST be defined with single quotes. Using double quotes causes string interpolation to occur resulting in named group references to not be evaluated as expected. Let's re-run the last command, but using double quotes for the ___-With___ parameter:
+:warning: <a name = "using.formatters-must-use-single-quotes"></a> The ___-With___ format parameter (and also [___-Paste___](#parameter-ref.paste) & [___-Drop___](#parameter-ref.drop) ) ___MUST___ be defined with single quotes. Using double quotes causes string interpolation to occur resulting in named group references to not be evaluated as expected. Let's re-run the last command, but using double quotes for the ___-With___ parameter:
 
 :x: Rename-Many -Pattern '(?\<disc\>\d{2})-' -Anchor '\d{2}' -With "\${_a}-${disc} -" -Top 10 -WhatIf
 
 ![picture](resources/images/rename-many.MOVE-TO-ANCHOR-FINAL.interpolated-WITH.double-quotes.jpg)
 
-This shows that '\${_a}' and '${disc}' are both evaluated to an empty string, breaking the desired result. The same applies to the [___-Paste___](#parameter-ref.paste) format parameter.
+This shows that '\${_a}' and '${disc}' are both evaluated to an empty string, breaking the desired result.
 
 The final point worthy of note is the 'Undo Rename' in the summary. By default, all executed commands are *undo-able* (assuming the undo feature has not been disabled). If we find that after running the command (assuming it has been unlocked and ___-WhatIf___ is not specified), the results are not as envisioned (shouldn't really happen, because the ___-WhatIf___ should always be used for new executions), the rename can be undone.
 
@@ -519,7 +520,7 @@ which results in:
 Bingo! The extra points worthy of note are:
 
 + **Pattern**: Now, we capture the *DISK-NO* and the *TRACK-NO* and then drop *TRACK-NO*
-+ **Drop**: This example illustrates that we don't have to drop static text. We can also reference named capture groups defined in ___-Pattern___ and other regex parameters such as ___-Anchor___ and ___-Copy___. In this case, we drop the *TRACK-NO* with an additional ' -'.
++ **Drop**: This example illustrates that we don't have to drop static text. As it is a _formatter_ parameter, we can also reference named capture groups defined in ___-Pattern___ and other regex parameters such as ___-Anchor___ and ___-Copy___. In this case, we drop the *TRACK-NO* with an additional ' -'.
 
 Let's see this in our batch:
 
@@ -601,7 +602,7 @@ What we've learnt about ___-AnchorEnd___ hybrid applies identically to ___-Ancho
 
 The *Drop* facility has a beneficial side effect. It can also be used to simply swap 2 pieces of content over.
 
-In this example we will use a new directory list and this time we have a list which is already normalised but we wish to swap over the contents of two *fields*. Consider the directory list:
+In this example we will use a new directory list and this time we have a list which is already normalised but we wish to swap over the positions of two *fields*. Consider the directory list:
 
 ![picture](resources/images/rename-many.SWAP-CONTENT.dir-list.jpg)
 
@@ -616,7 +617,7 @@ and we arrive at:
 Points of note:
 
 + **Pattern**: since we are only interested in the date as a whole, we can capture it as a single named capture, __date__. The ___Pattern___ makes up one end of the swap whose formatter is ___-With___ (because we're using an **Anchor**)
-+ **Anchor**: makes up the other end of the swap whose formatter is ___-Drop___. To ensure anchor matches correctly, we use '- at' as the discriminator, but we're not interested in preserving that part of the match so it is not inside a capture group
++ **Anchor**: makes up the other end of the swap, referenced by formatter parameter ___-Drop___. To ensure anchor matches correctly, we use '- at' as the discriminator, but we're not interested in preserving that part of the match so it is not inside a capture group
 + **Drop**: This formats the replacement for the ___-Pattern___. We reference the ___-Anchor___ named group entry containing the location captured as \${loc}
 
 So in summary, the ___-Pattern___ and the ___-Anchor___  matches, comprise the two ends of the swap and we use ___-With___ and ___-Drop___ parameters respectively as the formatters whose contents reference the appropriate named group captures.
@@ -629,7 +630,7 @@ So in summary, the ___-Pattern___ and the ___-Anchor___  matches, comprise the t
 
 *Update-Match* simply involves modifying a match in its present location. Since we don't have an ___-Anchor___ to deal with, it is much simpler to use than *Move Match* scenarios.
 
-As well as no ___-Anchor___ and related parameters, instead of using the ___-With___ parameter, we use the ___-Paste___ format parameter instead and it serves a similar purpose. The peculiarities of PowerShell parameter sets means that it is much easier to use a separate parameter, rather than to try and re-use ___-With___ in a different context (it is the same reason why new parameters were defined for the *Hybrid Anchors*, instead of re-purposing ___-Anchor___/___-Start___/___-End___).
+As well as ___-Anchor___ and related parameters, instead of using the ___-With___ parameter, we use the ___-Paste___ format parameter and it serves a similar purpose. The peculiarities of PowerShell parameter sets means that it is much easier to use a separate parameter, rather than to try and re-use ___-With___ in a different context (it is the same reason why new parameters were defined for the *Hybrid Anchors*, instead of re-purposing ___-Anchor___/___-Start___/___-End___).
 
 The file list which was the subject of [Move To Hybrid](#using.move-to-hybrid-anchor) will be used in the following discussion.
 
@@ -687,8 +688,7 @@ Eg:
 
 **Type**: [array](regular expression, string)
 
-Indicates that the rename operation will be a move of the token from its original point
-to the point indicated by [___-Anchor___](#parameter-ref.anchor). ___-Anchor___ is a regular expression string applied to the pipeline item's name (after the ___-Pattern___ match has been removed). The [___-Pattern___](#parameter-ref.pattern) match that is removed is inserted at the position indicated by the anchor match in collaboration with
+Indicates that the rename operation will be a move of the token from its original point to the point indicated by [___-Anchor___](#parameter-ref.anchor). ___-Anchor___ is a regular expression string applied to the pipeline item's name (after the ___-Pattern___ match has been removed). The [___-Pattern___](#parameter-ref.pattern) match that is removed is inserted at the position indicated by the anchor match in collaboration with
 the [Relation](#parameter-ref.relation) parameter.
 
 ### :dart: AnchorEnd<a name="parameter-ref.anchorend"></a>
@@ -713,15 +713,13 @@ Appends a literal string to end of item's name.
 
 **Type**: [ScriptBlock] (predicate)
 
-Provides another way of filtering pipeline items. This is not typically specified on the
-command line, rather it is meant for those wanting to build functionality on top of *Rename-Many*.
+Provides another way of filtering pipeline items. This is not typically specified on the command line, rather it is meant for those wanting to build functionality on top of *Rename-Many*.
 
 ### :dart: Context<a name="parameter-ref.context"></a>
 
 **Type**: [PSCustomObject]
 
-Provides another way of customising *Rename-Many*. This is not typically specified on the
-command line, rather it is meant for those wanting to build functionality on top of *Rename-Many*.
+Provides another way of customising *Rename-Many*. This is not typically specified on the command line, rather it is meant for those wanting to build functionality on top of *Rename-Many*.
 *Context* should be a PSCustomObject with the following note properties:
 
 + Title (default: 'Rename') the name used in the batch header.
@@ -740,12 +738,7 @@ Rename-Many.
 
 **Type**: [array](regular expression, string)
 
-Regular expression string applied to the pipeline item's name (after the [___-Pattern___](#parameter-ref.pattern) match has been removed), indicating a portion which should be copied and re-inserted (via the
-format parameters [___-Paste___](#parameter-ref.paste) and [___-With___](#parameter-ref.with)). Since this is a regular expression to be used in ___-Paste___/___-With___, there is no value in the user specifying a static pattern, because that literal string can just be defined in ___-Paste___/___-With___. The value in the ___-Copy___ parameter comes
-when a generic pattern is defined eg \d{3} (is non Literal), specifies any 3 digits as
-opposed to say '123', which could be used directly in the formatter parameters without
-the need for ___-Copy___. The match defined by ___-Copy___ is stored in special variable ${_c} and
-can be referenced as such from ___-Paste___ and ___-With___.
+Regular expression string applied to the pipeline item's name (after the [___-Pattern___](#parameter-ref.pattern) match has been removed), indicating a portion which should be copied and re-inserted (via the format parameters [___-Paste___](#parameter-ref.paste) and [___-With___](#parameter-ref.with)). Since this is a regular expression to be used in ___-Paste___/___-With___, there is no value in the user specifying a static pattern, because that literal string can just be defined in ___-Paste___/___-With___. The value in the ___-Copy___ parameter comes when a generic pattern is defined eg \d{3} (is non Literal), specifies any 3 digits as opposed to say '123', which could be used directly in the formatter parameters without the need for ___-Copy___. The match defined by ___-Copy___ is stored in special variable ${_c} and can be referenced as such from ___-Paste___ and ___-With___.
 
 ### :dart: Cut<a name="parameter-ref.cut"></a>
 
@@ -757,8 +750,7 @@ Is a replacement for the [___-Pattern___](#parameter-ref.pattern) parameter, whe
 
 **Type**: [switch]
 
-Indicates the command should be run in ___-WhatIf___ mode. When enabled, it presents additional information that assists the user in correcting the un-expected results caused by an incorrect/un-intended regular expression. The current diagnosis will show the contents of named capture groups that they may have specified. When an item
-is not renamed (usually because of an incorrect regular expression), the user can use the diagnostics along side the 'Not Renamed' reason to track down errors. When ___-Diagnose___ has been specified, ___-WhatIf___ does not need to be specified.
+Indicates the command should be run in ___-WhatIf___ mode. When enabled, it presents additional information that assists the user in correcting the un-expected results caused by an incorrect/un-intended regular expression. The current diagnosis will show the contents of named capture groups that they may have specified. When an item is not renamed (usually because of an incorrect regular expression), the user can use the diagnostics along side the 'Not Renamed' reason to track down errors. When ___-Diagnose___ has been specified, ___-WhatIf___ does not need to be specified.
 
 ### :dart: Directory<a name="parameter-ref.directory"></a>
 
@@ -784,8 +776,7 @@ Is another type of anchor used instead of [___-Anchor___](#parameter-ref.anchor)
 
 **Type**: [string](regular expression)
 
-Regular expression string applied to the original pipeline item's name (before the [___-Pattern___](#parameter-ref.pattern) match has been removed). Allows the user to exclude some items that have been fed in via the
-pipeline. Those items that match the exclusion are skipped during the rename batch.
+Regular expression string applied to the original pipeline item's name (before the [___-Pattern___](#parameter-ref.pattern) match has been removed). Allows the user to exclude some items that have been fed in via the pipeline. Those items that match the exclusion are skipped during the rename batch.
 
 ### :dart: File<a name="parameter-ref.file"></a>
 
@@ -797,15 +788,7 @@ Indicates only File items in the pipeline will be processed. If neither this swi
 
 **Type**: [string](regular expression)
 
-Regular expression string applied to the original pipeline item's name (before the [___-Pattern___](#parameter-ref.pattern) match has been removed). Allows the user to include some items that have been fed in via the
-pipeline. Only those items that match ___-Include___ pattern are included during the rename batch,
-the others are skipped. The value of the ___-Include___ parameter comes when you want to define
-a pattern which pipeline items match, without it be removed from the original name, which is
-what happens with ___-Pattern___. Eg, the user may want to specify the only items that should be
-considered a candidate to be renamed are those that match a particular pattern but doing so
-in ___-Pattern___ would simply remove that pattern. That may be ok, but if it's not, the user should
-specify a pattern in the ___-Include___ and use ___-Pattern___ for the match you do want to be moved
-(with the anchor parameters) or replaced (with the formatter parameters).
+Regular expression string applied to the original pipeline item's name (before the [___-Pattern___](#parameter-ref.pattern) match has been removed). Allows the user to include some items that have been fed in via the pipeline. Only those items that match ___-Include___ pattern are included during the rename batch, the others are skipped. The value of the ___-Include___ parameter comes when you want to define a pattern which pipeline items match, without it be removed from the original name, which is what happens with ___-Pattern___. Eg, the user may want to specify the only items that should be considered a candidate to be renamed are those that match a particular pattern but doing so in ___-Pattern___ would simply remove that pattern. That may be ok, but if it's not, the user should specify a pattern in the ___-Include___ and use ___-Pattern___ for the match you do want to be moved (with the anchor parameters) or replaced (with the formatter parameters).
 
 ### :dart: Paste<a name="parameter-ref.paste"></a>
 
@@ -819,9 +802,7 @@ defined inside regular expression parameters, or use special named references \$
 
 **Type**: [array](regular expression, string)
 
-Regular expression string that indicates which part of the pipeline items' name that
-either needs to be moved or replaced as part of bulk rename operation. Those characters
-in the name which match are removed from the name.
+Regular expression string that indicates which part of the pipeline items' name that either needs to be moved or replaced as part of bulk rename operation. Those characters in the name which match are removed from the name.
 
 ### :dart: Prepend<a name="parameter-ref.prepend"></a>
 
@@ -833,8 +814,7 @@ Prefixes a literal string to start of item's name.
 
 **Type**: [string]("before" | "after")
 
-Used in conjunction with the [___-Anchor___](#parameter-ref.anchor) parameter and can be set to either 'before' or
-'after' (the default). Defines the relationship of the [___-Pattern___](#parameter-ref.pattern) match with the ___-Anchor___ match in the new name for the pipeline item.
+Used in conjunction with the [___-Anchor___](#parameter-ref.anchor) parameter and can be set to either 'before' or 'after' (the default). Defines the relationship of the [___-Pattern___](#parameter-ref.pattern) match with the ___-Anchor___ match in the new name for the pipeline item.
 
 ### :dart: Start<a name="parameter-ref.start"></a>
 
@@ -846,39 +826,25 @@ Another type of anchor used instead of [___-Anchor___](#parameter-ref.anchor) an
 
 **Type**: [switch]
 
-Indicates if this is being invoked from a test case, so that the
-output can be suppressed if appropriate. By default, the test cases should be
-quiet. During development and test stage, the user might want to see actual
-output in the console. The presence of variable '*EliziumTest*' in the
-environment will enable verbose tests. When invoked by an interactive user in
-production environment, the Test flag should not be set. Doing so will suppress
-the output depending on the presence of '*EliziumTest*'. **ALL** test cases should
-specify this Test flag.
+Indicates if this is being invoked from a test case, so that the output can be suppressed if appropriate. By default, the test cases should be quiet. During development and test stage, the user might want to see actual output in the console. The presence of variable '*EliziumTest*' in the environment will enable verbose tests. When invoked by an interactive user in production environment, the Test flag should not be set. Doing so will suppress the output depending on the presence of '*EliziumTest*'. **ALL** test cases should specify this Test flag.
 
 ### :dart: Top<a name="parameter-ref.top"></a>
 
 **Type**: [int]
 
-A number indicating how many items to process. If it is known that the number of items
-that will be candidates to be renamed is large, the user can limit this to the first ___-Top___
-number of items. This is typically used as an exploratory tool, to determine the effects
-of the rename operation.
+A number indicating how many items to process. If it is known that the number of items that will be candidates to be renamed is large, the user can limit this to the first ___-Top___ number of items. This is typically used as an exploratory tool, to determine the effects of the rename operation.
 
 ### :dart: Transform<a name="parameter-ref.transform"></a>
 
 **Type**: [ScriptBlock]
 
-A script block which is given the chance to perform a modification to the finally named
-item. The transform is invoked prior to post-processing, so that the post-processing rules
-are not breached and the transform does not have to worry about breaking them. The transform
-function's signature is as follows:
+A script block which is given the chance to perform a modification to the finally named item. The transform is invoked prior to post-processing, so that the post-processing rules are not breached and the transform does not have to worry about breaking them. The transform function's signature is as follows:
 
 + Original: original item's name
 + Renamed: new name
 + CapturedPattern: pattern capture
 
-and should return the new name. If the transform does not change the name, it should return
-an empty string.
+and should return the new name. If the transform does not change the name, it should return an empty string.
 
 ### :dart: underscore<a name="parameter-ref.underscore"></a>
 
@@ -890,10 +856,7 @@ The pipeline item which should either be an instance of FileInfo or DirectoryInf
 
 **Type**: [char]
 
-Provides an alternative way to indicate that the regular expression parameters
-should be treated as a whole word (it just wraps the expression inside \b tokens).
-If set to '*', then it applies to all expression parameters otherwise a single letter
-can specify which of the parameters 'Whole' should be applied to. Valid values are:
+Provides an alternative way to indicate that the regular expression parameters should be treated as a whole word (it just wraps the expression inside \b tokens). If set to '*', then it applies to all expression parameters otherwise a single letter can specify which of the parameters 'Whole' should be applied to. Valid values are:
 
 + 'p': $Pattern
 + 'a': $Anchor/AnchorEnd/AnchorStart
@@ -914,13 +877,9 @@ match. Works in concert with [___-Relation___](#parameter-ref.relation) (whereas
 + ${_a}: the anchor match
 + ${_c}: the copy match
 
-When ___-Pattern___ contains named capture groups, these variables can also be referenced. Eg if the
-___-Pattern___ is defined as '(?\<day>\d{1,2})-(?\<mon>\d{1,2})-(?\<year>\d{4})', then the variables
-\${day}, \${mon} and \${year} also become available for use in ___-With___ or ___-Paste___.
+When ___-Pattern___ contains named capture groups, these variables can also be referenced. Eg if the ___-Pattern___ is defined as '(?\<day>\d{1,2})-(?\<mon>\d{1,2})-(?\<year>\d{4})', then the variables \${day}, \${mon} and \${year} also become available for use in ___-With___ or ___-Paste___.
 
-Typically, ___-With___ is literal text which is used to replace the ___-Pattern___ match and is inserted
-according to the anchor parameters and ___-Relation___. When using ___-With___, whatever is defined in the *anchor* match **IS** removed from the pipeline's name and requires the user to re-insert it with '${_a}' inside ___-With___
-if so required. The reason for this is that when ___-With___ is not present, the ___-Pattern___ match content is inserted verbatim next to the ___-Anchor___ either before or after. But if we use a ___-With___, then the user has full control over whereabouts the ___-Anchor___ is inserted inside ___-With___, so ___-Relation___ is redundant.
+Typically, ___-With___ is literal text which is used to replace the ___-Pattern___ match and is inserted according to the anchor parameters and ___-Relation___. When using ___-With___, whatever is defined in the *anchor* match **IS** removed from the pipeline's name and requires the user to re-insert it with '${_a}' inside ___-With___ if so required. The reason for this is that when ___-With___ is not present, the ___-Pattern___ match content is inserted verbatim next to the ___-Anchor___ either before or after. But if we use a ___-With___, then the user has full control over whereabouts the ___-Anchor___ is inserted inside ___-With___, so ___-Relation___ is redundant.
 
 ## :radioactive: Troubleshooting / Common Errors<a name="troubleshooting"></a>
 
