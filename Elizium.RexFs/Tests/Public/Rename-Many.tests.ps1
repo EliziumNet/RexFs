@@ -28,34 +28,18 @@ Describe 'Rename-Many' -Tag 'remy' {
       # This mock result works only because the actual returned FileSystemInfo returned
       # does not drive any control logic.
 
-      if ($_expected) {
+      if ($script:_expected) {
         # NOTE: Since this rename-FsItem mock is only invoked, if there is actually a rename to be
         # performed, expectations do not need (or rather should not) add expectations for scenarios
         # where the new name is the same as the original name (ie not renamed due to a non match).
         #
-        test-expect -Expects $_expected -Item $From.Name -Actual $To;
+        test-RenameExpect -Expects $script:_expected -Item $From.Name -Actual $To;
       }
       return $To;
     }
 
     Mock -ModuleName Elizium.RexFs Get-IsLocked {
       return $true;
-    }
-
-    function test-expect {
-      param(
-        [Parameter(Position = 0)][HashTable]$Expects,
-        [Parameter(Position = 1)][string]$Item,
-        [Parameter(Position = 2)][string]$Actual
-      )
-      if ($Expects.ContainsKey($Item)) {
-        Write-Debug "test-expect; EXPECT: '$($Expects[$Item])'";
-        Write-Debug "test-expect; ACTUAL: '$Actual'";
-        $Actual | Should -BeExactly $Expects[$Item];
-      }
-      else {
-        $false | Should -BeTrue -Because "Bad test!!, Item: '$Item' not defined in Expects";
-      }
     }
 
     $script:_unchanged = @{

@@ -13,6 +13,12 @@ $global:RexFs = [PSCustomObject]@{
         OperantShortCode  = 'remy';
       }
     }
+
+    Reno = [PSCustomObject]@{
+      Pattern = "\<[iI](?:\:(?<n>\d{1,2})(?:\,(?<pad>[0\s_]))?)?\>";
+      Pad     = "0";
+      Width   = 4;
+    }
   }
 
   Rules    = [PSCustomObject]@{
@@ -80,5 +86,24 @@ $global:RexFs = [PSCustomObject]@{
         'Signal'       = 'MULTI-SPACES'
       }
     );
+  }
+
+  Compute  = [PSCustomObject]@{
+    Reno = [PSCustomObject]@{
+      Add1   = [scriptblock] {
+        [OutputType([int])]
+        param(
+          [int]$number
+        )
+        return $number + 1;
+      }
+      Double = [scriptblock] {
+        [OutputType([int])]
+        param(
+          [int]$number
+        )
+        return $number * 2;
+      }
+    }
   }
 }
