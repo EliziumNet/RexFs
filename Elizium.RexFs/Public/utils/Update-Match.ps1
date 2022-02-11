@@ -83,6 +83,7 @@ function Update-Match {
   Update-Match 'VAL 1999-02-21 + RH - CLOSE' '(?<dt>\d{4}-\d{2}-\d{2})' -Paste '${_c},----X--X--' -Copy '[^\s]+' -CopyOccurrence 2
   #>
   [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
+  [Alias('upma')]
   [OutputType([string])]
   param(
     [Parameter(Mandatory, Position = 0)]
