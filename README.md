@@ -5,7 +5,7 @@ ___Regular expressions based file system operations module with Bulk File/Direct
 [![A B](https://img.shields.io/badge/branching-commonflow-informational?style=flat)](https://commonflow.org)
 [![A B](https://img.shields.io/badge/merge-rebase-informational?style=flat)](https://git-scm.com/book/en/v2/Git-Branching-Rebasing)
 [![A B](https://img.shields.io/github/license/eliziumnet/RexFs)](https://github.com/EliziumNet/RexFs/blob/master/LICENSE)
-[![A B](https://img.shields.io/powershellgallery/p/Elizium.RexFs)](https://www.powershellgallery.com/packages/Elizium.RexFs)
+[![A B](https://img.shields.io/powershellgallery/p/Elizium.RexFs)](https://www.powershellgallery.com/packages/Elizium.RexFs) [![Join the chat at https://gitter.im/EliziumNet/rexfs](https://badges.gitter.im/EliziumNet/rexfs.svg)](https://gitter.im/EliziumNet/rexfs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 <!-- MarkDownLint-disable no-inline-html -->
 <!-- MarkDownLint-disable no-emphasis-as-heading -->
