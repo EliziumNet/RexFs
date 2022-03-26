@@ -57,9 +57,9 @@ Describe "Rename-ByNo" -Tag "reno" {
         Format   = "foo-bar_<i>";
         Order    = "asc";
         Expected = @{
-          "03 - (A) Mind In Rewind.txt"    = "foo-bar_0001.txt";
-          "01 - (B) Akoustik.txt"          = "foo-bar_0002.txt";
-          "02 - (C) Lodgikal Nonsense.txt" = "foo-bar_0003.txt";
+          "01 - (B) Akoustik.txt"          = "foo-bar_0001.txt";
+          "02 - (C) Lodgikal Nonsense.txt" = "foo-bar_0002.txt";
+          "03 - (A) Mind In Rewind.txt"    = "foo-bar_0003.txt";
         }
       },
 
@@ -67,9 +67,9 @@ Describe "Rename-ByNo" -Tag "reno" {
         Format   = "foo-bar-<i:2,_>";
         Order    = "asc";
         Expected = @{
-          "03 - (A) Mind In Rewind.txt"    = "foo-bar-_1.txt";
-          "01 - (B) Akoustik.txt"          = "foo-bar-_2.txt";
-          "02 - (C) Lodgikal Nonsense.txt" = "foo-bar-_3.txt";
+          "01 - (B) Akoustik.txt"          = "foo-bar-_1.txt";
+          "02 - (C) Lodgikal Nonsense.txt" = "foo-bar-_2.txt";
+          "03 - (A) Mind In Rewind.txt"    = "foo-bar-_3.txt";
         }
       }
 
@@ -77,9 +77,9 @@ Describe "Rename-ByNo" -Tag "reno" {
         Format   = "foo-bar-<i:6,0>";
         Order    = "asc";
         Expected = @{
-          "03 - (A) Mind In Rewind.txt"    = "foo-bar-000001.txt";
-          "01 - (B) Akoustik.txt"          = "foo-bar-000002.txt";
-          "02 - (C) Lodgikal Nonsense.txt" = "foo-bar-000003.txt";
+          "01 - (B) Akoustik.txt"          = "foo-bar-000001.txt";
+          "02 - (C) Lodgikal Nonsense.txt" = "foo-bar-000002.txt";
+          "03 - (A) Mind In Rewind.txt"    = "foo-bar-000003.txt";
         }
       },
 
@@ -89,9 +89,9 @@ Describe "Rename-ByNo" -Tag "reno" {
         Format   = "foo-bar_<i>";
         Order    = "desc";
         Expected = @{
-          "02 - (C) Lodgikal Nonsense.txt" = "foo-bar_0001.txt";
-          "01 - (B) Akoustik.txt"          = "foo-bar_0002.txt";
           "03 - (A) Mind In Rewind.txt"    = "foo-bar_0003.txt";
+          "02 - (C) Lodgikal Nonsense.txt" = "foo-bar_0002.txt";
+          "01 - (B) Akoustik.txt"          = "foo-bar_0001.txt";
         }
       },
 
@@ -99,9 +99,9 @@ Describe "Rename-ByNo" -Tag "reno" {
         Format   = "foo-bar-<i:2,_>";
         Order    = "desc";
         Expected = @{
-          "02 - (C) Lodgikal Nonsense.txt" = "foo-bar-_1.txt";
-          "01 - (B) Akoustik.txt"          = "foo-bar-_2.txt";
           "03 - (A) Mind In Rewind.txt"    = "foo-bar-_3.txt";
+          "02 - (C) Lodgikal Nonsense.txt" = "foo-bar-_2.txt";
+          "01 - (B) Akoustik.txt"          = "foo-bar-_1.txt";
         }
       }
 
@@ -109,9 +109,9 @@ Describe "Rename-ByNo" -Tag "reno" {
         Format   = "foo-bar-<i:6,0>";
         Order    = "desc";
         Expected = @{
-          "02 - (C) Lodgikal Nonsense.txt" = "foo-bar-000001.txt";
-          "01 - (B) Akoustik.txt"          = "foo-bar-000002.txt";
           "03 - (A) Mind In Rewind.txt"    = "foo-bar-000003.txt";
+          "02 - (C) Lodgikal Nonsense.txt" = "foo-bar-000002.txt";
+          "01 - (B) Akoustik.txt"          = "foo-bar-000001.txt";
         }
       }
     ) {
@@ -134,6 +134,30 @@ Describe "Rename-ByNo" -Tag "reno" {
         else {
           throw "bad test definition, Order is mis-defined: '$Order'";
         }          
+      }
+    }
+
+    Context "given: custom compute" {
+      It "should: rename according to custom script-block" {
+        [array]$unsorted = Get-ChildItem $_directoryPath;
+        [string]$format = "foo-bar_<i>";
+        [scriptblock]$increment = [scriptblock] {
+          [OutputType([int])]
+          param(
+            [int]$number
+          )
+          return $number + 1;
+        }
+
+        $unsorted | asc | Rename-ByNo -Format $format -Compute $increment -WhatIf:$_whatIf -Test:$_test;
+
+        $expected = @{
+          "01 - (B) Akoustik.txt"          = "foo-bar_0002.txt";
+          "02 - (C) Lodgikal Nonsense.txt" = "foo-bar_0003.txt";
+          "03 - (A) Mind In Rewind.txt"    = "foo-bar_0004.txt";
+        }
+
+        $global:_expected = $expected;
       }
     }
   }

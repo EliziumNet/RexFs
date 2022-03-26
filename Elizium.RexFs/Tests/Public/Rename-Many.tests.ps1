@@ -80,7 +80,7 @@ Describe 'Rename-Many' -Tag 'remy' {
         }
 
         Context 'and: First Only' {
-          It 'should: do rename; replace First Pattern for Copy text' -Tag 'Current' {
+          It 'should: do rename; replace First Pattern for Copy text' {
             InModuleScope Elizium.RexFs {
               $script:_expected = @{
                 'loopz.application.t1.log' = 'loopz.tpplication.t1.log';
