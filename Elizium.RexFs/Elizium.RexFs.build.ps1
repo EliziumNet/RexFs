@@ -25,31 +25,39 @@ $script:Core = [PSCustomObject]@{
   );
   Output     = $(Join-Path -Path $PSScriptRoot -ChildPath 'Output');
 }
+$script:AdminDirectory = "Admin";
+$script:AdminPath = $(Join-Path -Path $PSScriptRoot -ChildPath $script:AdminDirectory);
+$script:CustomModuleNameExclusions = "module-name-check-exclusions.csv";
 
 $script:Properties = [PSCustomObject]@{
-  ModuleName          = $($script:Core.ModuleName);
-  ModuleRoot          = $PSScriptRoot;
-  OutputFolder        = $($script:Core.Output);
-  ExternalHelpPath    = $(Join-Path -Path $script:Core.Output -ChildPath $script:ModuleName -AdditionalChildPath 'en-GB');
+  ModuleName                     = $($script:Core.ModuleName);
+  ModuleRoot                     = $PSScriptRoot;
+  OutputFolder                   = $($script:Core.Output);
+  ExternalHelpPath               = $(Join-Path -Path $script:Core.Output -ChildPath $script:ModuleName -AdditionalChildPath 'en-GB');
 
-  ImportFolders       = @('Public', 'Internal', 'Classes');
-  OutPsmPath          = "$($Core.ModuleOut).psm1";
-  OutPsdPath          = "$($Core.ModuleOut).psd1";
-  ModuleOutPath       = $(Join-Path -Path $PSScriptRoot -ChildPath "Output" -AdditionalChildPath $(
+  ImportFolders                  = @('Public', 'Internal', 'Classes');
+  OutPsmPath                     = "$($Core.ModuleOut).psm1";
+  OutPsdPath                     = "$($Core.ModuleOut).psd1";
+  ModuleOutPath                  = $(Join-Path -Path $PSScriptRoot -ChildPath "Output" -AdditionalChildPath $(
       "$($script:ModuleName)"
     ));
 
-  FinalDirectory      = 'Final';
-  PublicFolder        = 'Public';
-  DSCResourceFolder   = 'DSCResources';
+  FinalDirectory                 = 'Final';
+  PublicFolder                   = 'Public';
+  DSCResourceFolder              = 'DSCResources';
 
-  SourceOutPsdPath    = $(Join-Path -Path $PSScriptRoot -ChildPath "$($script:Core.ModuleName).psd1");
-  TestHelpers         = $(Join-Path -Path $PSScriptRoot -ChildPath 'Tests' -AdditionalChildPath 'Helpers');
+  SourceOutPsdPath               = $(Join-Path -Path $PSScriptRoot -ChildPath "$($script:Core.ModuleName).psd1");
+  TestHelpers                    = $(Join-Path -Path $PSScriptRoot -ChildPath 'Tests' -AdditionalChildPath 'Helpers');
 
-  AdditionExportsPath = $(Join-Path -Path $PSScriptRoot -ChildPath 'Init' -AdditionalChildPath 'additional-exports.ps1');
+  AdditionExportsPath            = $(Join-Path -Path $PSScriptRoot -ChildPath 'Init' -AdditionalChildPath 'additional-exports.ps1');
 
-  StatsFile           = $(Join-Path -Path $script:Core.Output -ChildPath 'stats.json');
-  FileListDirectory   = $(Join-Path -Path $PSScriptRoot -ChildPath 'FileList');
+  StatsFile                      = $(Join-Path -Path $script:Core.Output -ChildPath 'stats.json');
+  FileListDirectory              = $(Join-Path -Path $PSScriptRoot -ChildPath 'FileList');
+
+  ModuleNameExclusionsRexo       = [regex]::new("(?:.class.ps1$|globals.ps1)", "IgnoreCase");
+
+  CustomModuleNameExclusionsPath = $(
+    Join-Path -Path $script:AdminPath -ChildPath $script:CustomModuleNameExclusions);
 }
 
 if (Test-Path -Path $script:Properties.TestHelpers) {
@@ -132,6 +140,112 @@ function Get-PublicFunctionAliasesToExport {
   $aliases;
 }
 
+function Test-DoesFileNameMatchFunctionName {
+  [OutputType([boolean])]
+  param(
+    [Parameter()]
+    [string]$Name,
+
+    [Parameter()]
+    [string]$Content
+  )
+  [System.Text.RegularExpressions.RegexOptions]$options = "IgnoreCase";
+  [string]$escaped = [regex]::Escape($Name);
+  [regex]$rexo = New-Object -TypeName System.Text.RegularExpressions.RegEx -ArgumentList (
+    @("function\s+$($escaped)", $options));
+
+  return $rexo.IsMatch($Content);
+}
+
+function Test-ShouldFileNameBeChecked {
+  [OutputType([boolean])]
+  param(
+    [Parameter(Mandatory)]
+    [string]$FileName
+  )
+  [boolean]$result = if ($script:Properties.ModuleNameExclusionsRexo.IsMatch($FileName)) {
+    $false;
+  }
+  elseif (Test-Path -Path $script:CustomModuleNameExclusions -PathType Leaf) {
+    [string]$content = Get-Content -Path $script:CustomModuleNameExclusionsPath;
+
+    [string[]]$exclusions = $((if (-not([string]::IsNullOrEmpty($content))) {
+          $($content -split ',') 
+        } | ForEach-Object { $_.Trim() }));
+
+    $exclusions ? $($exclusions -notContains $FileName) : $true;
+    else {
+      $true
+    }
+  }
+
+  return $result;
+}
+
+function Repair-Using {
+  [OutputType([PSCustomObject])]
+  param(
+    [Parameter(Mandatory)]
+    [PSCustomObject]$ParseInfo
+  )
+  [System.Text.RegularExpressions.MatchCollection]$mc = $ParseInfo.Rexo.Matches(
+    $ParseInfo.Content
+  );
+
+  $withoutUsingStatements = $ParseInfo.Rexo.Replace($ParseInfo.Content, [string]::Empty);
+
+  [System.Text.StringBuilder]$builder = [System.Text.StringBuilder]::new();
+
+  [string[]]$statements = $(foreach ($m in $mc) {
+      [System.Text.RegularExpressions.GroupCollection]$groups = $m.Groups;
+      [string]$syntax = $groups["syntax"];
+      [string]$name = $groups["name"];
+
+      "using $syntax $name;";
+    }) | Select-Object -unique;
+
+  $statements | ForEach-Object {
+    $builder.AppendLine($_);
+  }
+  $builder.Append($withoutUsingStatements);
+
+  return [PSCustomObject]@{
+    Content = $builder.ToString();
+  }
+}
+
+function Get-UsingParseInfo {
+  [OutputType([PSCustomObject])]
+  param(
+    [Parameter(Mandatory, ValueFromPipeline, Position = 0)]
+    [string]$Path,
+
+    [Parameter()]
+    [string]$Pattern = $("\s*using (?<syntax>namespace|module)\s+(?<name>[\w\.]+);?"),
+
+    [Parameter()]
+    [switch]$WithContent
+  )
+  [regex]$rexo = [regex]::new($Pattern, "IgnoreCase, MultiLine");
+  [array]$records = Invoke-ScriptAnalyzer -Path $Path | Where-Object {
+    $_.RuleName -eq "UsingMustBeAtStartOfScript"
+  };
+
+  [PSCustomObject]$result = [PSCustomObject]@{
+    Records = $records;
+    IsOk    = $records.Count -eq 0;
+    Rexo    = $rexo;
+  }
+
+  if ($WithContent.IsPresent) {
+    $result | Add-Member -MemberType NoteProperty -Name "Content" -Value $(
+      Get-Content -LiteralPath $Path -Raw;
+    )
+  }
+
+  return $result;
+}
+
 task Clean {
   if (-not(Test-Path $script:Properties.OutputFolder)) {
     New-Item -ItemType Directory -Path $script:Properties.OutputFolder > $null
@@ -189,7 +303,15 @@ task Compile @compileParams {
       $files = Get-ChildItem -Path $currentFolder -File -Recurse -Filter '*.ps1'
       foreach ($file in $files) {
         Write-Verbose -Message "Adding $($file.FullName)"
+        [string]$content = Get-Content -Path (Resolve-Path $file.FullName)
         Get-Content -Path (Resolve-Path $file.FullName) >> $script:Properties.OutPsmPath
+
+        if (Test-ShouldFileNameBeChecked -FileName $file.Name) {
+          if (-not(Test-DoesFileNameMatchFunctionName -Name $File.BaseName -Content $content)) {
+            Write-Host "*** Beware, file: '$($file.Name)' does not contain matching function definition" `
+              -ForegroundColor Red;
+          }
+        }
       }
     }
   }
@@ -256,6 +378,15 @@ task Compile @compileParams {
       $moduleInitContent = Get-Content -LiteralPath $moduleInitPath;
       $moduleInitContent >> $script:Properties.OutPsmPath;
     }
+  }
+
+  # Finally resolve using statements
+  #
+  [PSCustomObject]$usingInfo = Get-UsingParseInfo -Path $script:Properties.OutPsmPath -WithContent;
+  
+  if (-not($usingInfo.IsOk)) {
+    Write-Host "Repairing using statements";
+    $null = Repair-Using -ParseInfo $usingInfo;
   }
 }
 
