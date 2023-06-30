@@ -1,6 +1,6 @@
 ﻿
 $global:RexFs = [PSCustomObject]@{
-  Defaults = [PSCustomObject]@{
+  Defaults   = [PSCustomObject]@{
     Remy = [PSCustomObject]@{
       Marker  = [char]0x2BC1;
 
@@ -21,7 +21,16 @@ $global:RexFs = [PSCustomObject]@{
     }
   }
 
-  Rules    = [PSCustomObject]@{
+  Extensions = [PSCustomObject]@{
+    Normalise = $true
+    ToLower   = $true
+    Remap     = [hashtable]@{
+      "jpeg" = "jpg"
+      "text" = "txt"
+    }
+  }
+
+  Rules      = [PSCustomObject]@{
     Remy = @(
       @{
         ID             = 'MissingCapture';
@@ -88,7 +97,7 @@ $global:RexFs = [PSCustomObject]@{
     );
   }
 
-  Compute  = [PSCustomObject]@{
+  Compute    = [PSCustomObject]@{
     Reno = [PSCustomObject]@{
       Add1   = [scriptblock] {
         [OutputType([int])]

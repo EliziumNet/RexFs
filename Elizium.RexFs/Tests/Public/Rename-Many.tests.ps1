@@ -326,6 +326,20 @@ Describe 'Rename-Many' -Tag 'remy' {
     } # and: Source matches Pattern
   } # UpdateInPlace
 
+  Context 'Extensions' -Tag 'Current' {
+    It 'should: lowercase the extension' {
+      $script:_expected = @{
+        'foo-bar.text' = 'faz-bar.txt';
+        'foo-baz.TXT'  = 'faz-baz.txt';
+      }
+      [string]$extensionsPath = './Tests/Data/extensions';
+
+      Get-ChildItem -Path $extensionsPath -File | Rename-Many `
+        -Pattern 'foo' -Paste 'faz' `
+        -WhatIf:$_whatIf -Test:$_test;
+    }
+  }
+
   Context 'given: Transform' {
     Context 'and: Transform returns non empty result' {
       It 'should: perform custom transform successfully' {
