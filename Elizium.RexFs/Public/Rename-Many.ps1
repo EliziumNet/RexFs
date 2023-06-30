@@ -691,7 +691,7 @@ function Rename-Many {
       [boolean]$itemIsDirectory = ($_underscore.Attributes -band
         [System.IO.FileAttributes]::Directory) -eq [System.IO.FileAttributes]::Directory;
 
-      $endAdapter = New-EndAdapter($_underscore);
+      $endAdapter = New-EndAdapter -fsInfo $_underscore -Extensions $RexFs.Extensions
 
       [string]$action = $_exchange["$($Remy_EXS).ACTION"];
       [boolean]$performDiagnosis = ($_exchange.ContainsKey('LOOPZ.DIAGNOSE') -and
